@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -122,8 +123,12 @@ STATICFILES_DIRS = [BASE_DIR/'web/static',]
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR/'web/media'
 
+PROFILE_SIZE = (400,400)
+USER_PATH = 'web/media/users'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTH_USER_MODEL = 'accounts.MyUser'
