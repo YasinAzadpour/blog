@@ -10,8 +10,16 @@ class Post(models.Model):
     read_time = models.IntegerField()
     slug = models.SlugField(unique=True)
     published = models.BooleanField(default=False)
+    tags = models.ManyToManyField('Tag')
+
 
     def __str__(self):
         return f'{self.title}'
-    
 
+
+class Tag(models.Model):
+    name = models.CharField(max_length=20, unique=True)
+
+    def __str__(self):
+        return f'{self.name}'
+    
