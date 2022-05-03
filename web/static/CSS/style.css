@@ -1,0 +1,23 @@
+
+*{
+  -webkit-tap-highlight-color: transparent;
+}
+::selection {
+  color: #4c00ff;
+  background: #4c00ff3a;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  border-radius: 100px;
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background:#72727285;
+}
+::-webkit-scrollbar-button {
+  visibility: hidden;
+}
