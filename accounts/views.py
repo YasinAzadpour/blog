@@ -1,3 +1,14 @@
-from django.shortcuts import render
+from django.contrib.auth import logout
+from django.shortcuts import redirect, render
 
-# Create your views here.
+
+def auth(request):
+    if request.user.is_authenticated:
+        return redirect('/')
+        
+    return render(request, 'index.html')
+
+
+def log_out(request):
+    logout(request)
+    return redirect('accounts:sign_in')

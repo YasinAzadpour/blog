@@ -13,7 +13,6 @@ from django.utils.translation import gettext_lazy as _
 class UsernameValidator(validators.RegexValidator):
     regex = r'^(?!.*\.\.)(?!.*\.$)[^\W][a-z0-9_.]{2,29}$'
     message = _('Enter a valid username (eg. user_name)')
-    flags = 0
 
 
 class MyUser(AbstractUser):
@@ -23,7 +22,7 @@ class MyUser(AbstractUser):
     username = models.CharField(_('username'), unique=True, max_length=30, validators=[username_validator])
     name = models.CharField(_('full name'), blank=True, max_length=50)
     bio = models.CharField(_('biography'), blank=True, max_length=150)
-    email = models.EmailField(_('email address'), blank=True, unique=True)
+    email = models.EmailField(_('email address'), unique=True)
     profile = models.ImageField(_('profile image'), blank=True, upload_to='users/')
     first_name = last_name = None  # use name instead of first_name and last_name
 
