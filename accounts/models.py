@@ -1,4 +1,5 @@
 import os
+from pyexpat import model
 
 import cv2
 from django.conf import settings
@@ -25,7 +26,25 @@ class MyUser(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
     profile = models.ImageField(_('profile image'), blank=True, upload_to='users/')
     first_name = last_name = None  # use name instead of first_name and last_name
+    fallowing_users = models.ManyToManyField('self', symmetrical=False, blank=True)
 
+    @property
+    def fallowings(self):
+        return self.fallowing_users.all()
+
+    @property
+    def fallowers(self):
+        return MyUser.objects.filter(fallowing_users=self)
+
+    def add_fallowing(self, pk):
+        user = MyUser.objects.get(pk=pk)
+        self.fallowing_users.add(user)
+        return self.fallowings
+
+    def del_fallowing(self, pk):
+        user = MyUser.objects.get(pk=pk)
+        self.fallowing_users.remove(user)
+        return self.fallowings
 
     def __str__(self) -> str:
         return f"{self.username}"
@@ -63,7 +82,7 @@ class MyUser(AbstractUser):
         except:
             return False
 
-    def to_json(self):
+    def as_json(self):
         data = {
             'id': self.pk,
             'username': self.username,
@@ -73,3 +92,11 @@ class MyUser(AbstractUser):
             'profile': self.profile.url if self.profile else '',
         }
         return data
+
+    def fallowings_as_json(self):
+        users = self.fallowing_users.all()
+        return [u.as_json() for u in users]
+
+    def fallowers_as_json(self):
+        users = MyUser.objects.filter(fallowing_users=self)
+        return [u.as_json() for u in users]
