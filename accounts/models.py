@@ -1,5 +1,4 @@
 import os
-from pyexpat import model
 
 import cv2
 from django.conf import settings
@@ -8,6 +7,7 @@ from django.core import files, validators
 from django.db import models
 from django.utils.deconstruct import deconstructible
 from django.utils.translation import gettext_lazy as _
+from posts.models import Tag
 
 
 @deconstructible
@@ -27,6 +27,16 @@ class MyUser(AbstractUser):
     profile = models.ImageField(_('profile image'), blank=True, upload_to='users/')
     first_name = last_name = None  # use name instead of first_name and last_name
     fallowing_users = models.ManyToManyField('self', symmetrical=False, blank=True)
+    fallowing_tags = models.ManyToManyField('posts.tag', blank=True)
+
+    @property
+    def tags(self):
+        return self.fallowing_tags.all()
+    
+    def add_fallowing(self, pk):
+        tag = Tag.objects.get(pk=pk)
+        self.fallowing_tags.add(tag)
+        return self.tags
 
     @property
     def fallowings(self):
@@ -100,3 +110,7 @@ class MyUser(AbstractUser):
     def fallowers_as_json(self):
         users = MyUser.objects.filter(fallowing_users=self)
         return [u.as_json() for u in users]
+
+    def tags_as_json(self):
+        tags = self.fallowing_tags.all()
+        return [t.as_json() for t in tags]

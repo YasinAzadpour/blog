@@ -7,10 +7,9 @@ class Post(models.Model):
     title = models.CharField(max_length=50)
     text =  models.TextField(max_length=20_000)
     date = models.DateField(auto_now=True)
-    read_time = models.IntegerField()
-    slug = models.SlugField(unique=True)
+    slug = models.CharField(max_length=50, unique=True)
     published = models.BooleanField(default=False)
-    tags = models.ManyToManyField('Tag')
+    tags = models.ManyToManyField('Tag', blank=True)
 
 
     def __str__(self):
@@ -18,7 +17,12 @@ class Post(models.Model):
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=20, unique=True)
+    name = models.CharField(max_length=50, unique=True)
+    slug = models.CharField(max_length=50, unique=True)
+    
+
+    def as_json(self):
+        return {'id': self.pk, 'name': self.name, 'slug': self.slug}
 
     def __str__(self):
         return f'{self.name}'
