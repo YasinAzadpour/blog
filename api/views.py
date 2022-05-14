@@ -66,3 +66,19 @@ def clean_data(data):
     
     return newData
 
+@require_POST
+def me(request):
+    user = request.user
+    if user.is_authenticated:
+        data = user.as_json() 
+        data['result'] = 1
+        data['fallowers'] = user.fallowers_as_json()
+        data['fallowings'] = {
+            'people': user.fallowings_as_json(),
+            'tags': user.tags_as_json(),
+        }
+        data['posts'] = user.posts_as_json()
+        
+        return JsonResponse(data)
+
+    return JsonResponse({'result': 0})
