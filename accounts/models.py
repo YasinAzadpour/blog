@@ -7,7 +7,7 @@ from django.core import files, validators
 from django.db import models
 from django.utils.deconstruct import deconstructible
 from django.utils.translation import gettext_lazy as _
-from posts.models import Tag
+from posts.models import Tag, Post
 
 
 @deconstructible
@@ -32,7 +32,7 @@ class MyUser(AbstractUser):
     @property
     def tags(self):
         return self.fallowing_tags.all()
-    
+
     def add_fallowing(self, pk):
         tag = Tag.objects.get(pk=pk)
         self.fallowing_tags.add(tag)
@@ -41,6 +41,10 @@ class MyUser(AbstractUser):
     @property
     def fallowings(self):
         return self.fallowing_users.all()
+
+    @property
+    def posts(self):
+        return Post.objects.filter(user=self)
 
     @property
     def fallowers(self):
@@ -104,13 +108,13 @@ class MyUser(AbstractUser):
         return data
 
     def fallowings_as_json(self):
-        users = self.fallowing_users.all()
-        return [u.as_json() for u in users]
+        return [u.as_json() for u in self.fallowers]
 
     def fallowers_as_json(self):
-        users = MyUser.objects.filter(fallowing_users=self)
-        return [u.as_json() for u in users]
+        return [u.as_json() for u in self.fallowers]
 
     def tags_as_json(self):
-        tags = self.fallowing_tags.all()
-        return [t.as_json() for t in tags]
+        return [t.as_json() for t in self.tags]
+
+    def posts_as_json(self):
+        return [i.as_json() for i in self.posts]

@@ -14,6 +14,18 @@ class Post(models.Model):
 
     def __str__(self):
         return f'{self.title}'
+    
+    def as_json(self):
+        data = {
+            'user': self.user.as_json(),
+            'title': self.title,
+            'text': self.text,
+            'date': self.date,
+            'slug': self.slug,
+            'isPub': self.published,
+            'tags': [i.as_json() for i in self.tags.all()]
+        }
+        return data
 
 
 class Tag(models.Model):
