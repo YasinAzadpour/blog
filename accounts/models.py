@@ -102,7 +102,7 @@ class MyUser(AbstractUser):
             'fallowers': self.fallowers.count(),
             'fallowings' : self.fallowings.count(),
             'tags': self.tags.count(),
-            'fallowed': (user in self.fallowings) or (user in self.tags) if user else False,
+            'fallowed': (user in self.fallowers) or (user in self.tags) if user else False,
         }
         return data
 

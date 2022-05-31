@@ -8,8 +8,44 @@ const useState = React.useState;
 const useEffect = React.useEffect;
 const createContext = React.createContext;
 
+const getMyInfo = (ctext) => {
+  const [data, setData] = ctext;
+  $.ajax({
+    method: "POST",
+    url: "/api/me",
+    data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken },
+    success: (r) => {
+      data.setIsReady(true);
+      if (r.result) {
+        setData({ ...data, ["me"]: r.me });
+      }
+    },
+    error: () => {
+      showMsg("An unknown nerwoek error has occurred");
+      setTimeout(getMyInfo, 10000);
+    },
+  });
+};
+
+const cleanMd = (text) => {
+  return text.replace(/[#```>\*]+|<\w.*?>/g, "").replace(/\n+/g, " ");
+};
+
+const showMsg = (message, t = 5000) => {
+  const container = $("#msgContainer");
+  const msg = $("#msgContainer #msg");
+  msg.text(message);
+  container.removeClass("opacity-0 pointer-events-none");
+
+  setTimeout(() => {
+    container.addClass("opacity-0 pointer-events-none");
+    msg.text("");
+  }, t);
+};
+
 // some general function
 const setTitle = (e) => {
+  $("main").scrollTop(0);
   document.title = "BACKSLASH - " + e.currentTarget.name;
 };
 
@@ -85,7 +121,7 @@ const genColor = (id) => {
   const randColor = colors[id % 17];
   const randTuns = tuns[id % 6];
 
-  return `${randColor}-${randTuns}`;
+  return `${randColor || "gray"}-${randTuns || 900}`;
 };
 
 const Loading = () => {
@@ -281,7 +317,7 @@ const Navbar = ({ state, loading }) => {
     <nav
       className={`bg-white fixed ${
         state == "auth" ? "hidden" : "flex"
-      } w-full h-16 border-t-2 bottom-0 border-gray-200 sm:left-0 sm:h-full sm:w-16 sm:border-r-2 sm:flex-col sm:justify-between`}
+      } w-full h-16 border-t-2 bottom-0 border-gray-200 sm:left-0 sm:h-full sm:w-16 sm:border-r-2 sm:flex-col sm:justify-between z-10`}
     >
       {loading ? (
         <div className="hidden sm:flex m-2 text-2xl items-center justify-center ">
@@ -322,7 +358,7 @@ const Navbar = ({ state, loading }) => {
             onClick={setTitle}
             name="Home"
             tooltip="Home"
-            className={`px-4 m-2 text-2xl flex items-center justify-center cursor-pointer sm:after:absolute sm:after:left-[100%] sm:after:py-1 sm:after:px-2 sm:after:bg-gray-900 sm:after:rounded-lg sm:after:text-base sm:after:flex sm:after:items-center sm:after:justify-center sm:after:border-[1px] sm:after:border-gray-700 sm:after:text-white sm:after:opacity-0 sm:after:-translate-y-3 hover:sm:after:translate-y-0 hover:sm:after:opacity-100 hover:sm:after:transition-all sm:after:transition-none after:pointer-events-none sm:after:content-[attr(tooltip)] ${
+            className={`px-4 m-2 text-2xl flex items-center justify-center cursor-pointer sm:after:absolute sm:after:left-[100%] sm:after:py-1 sm:after:px-2 sm:after:bg-gray-900 sm:after:rounded-lg sm:after:text-base sm:after:flex sm:after:items-center sm:after:justify-center sm:after:border-[1px] sm:after:border-gray-700 sm:after:text-white sm:after:opacity-0 sm:after:-translate-y-3 hover:sm:after:translate-y-0 hover:sm:after:opacity-100 hover:sm:after:transition-all sm:after:transition-none after:pointer-events-none sm:after:content-[attr(tooltip)] focus-visible:scale-110  focus-visible:text-gray-900 ${
               state == "Home" ? "text-gray-900" : "text-gray-500"
             }`}
           >
@@ -334,7 +370,7 @@ const Navbar = ({ state, loading }) => {
             name="Search"
             to="/search"
             tooltip="Search"
-            className={`px-4 m-2 text-2xl flex items-center justify-center cursor-pointer sm:after:absolute sm:after:left-[100%] sm:after:py-1 sm:after:px-2 sm:after:bg-gray-900 sm:after:rounded-lg sm:after:text-base sm:after:flex sm:after:items-center sm:after:justify-center sm:after:border-[1px] sm:after:border-gray-700 sm:after:text-white sm:after:opacity-0 sm:after:-translate-y-3 hover:sm:after:translate-y-0 hover:sm:after:opacity-100 hover:sm:after:transition-all sm:after:transition-none after:pointer-events-none sm:after:content-[attr(tooltip)] ${
+            className={`px-4 m-2 text-2xl flex items-center justify-center cursor-pointer sm:after:absolute sm:after:left-[100%] sm:after:py-1 sm:after:px-2 sm:after:bg-gray-900 sm:after:rounded-lg sm:after:text-base sm:after:flex sm:after:items-center sm:after:justify-center sm:after:border-[1px] sm:after:border-gray-700 sm:after:text-white sm:after:opacity-0 sm:after:-translate-y-3 hover:sm:after:translate-y-0 hover:sm:after:opacity-100 hover:sm:after:transition-all sm:after:transition-none after:pointer-events-none sm:after:content-[attr(tooltip)] focus-visible:scale-110  focus-visible:text-gray-900 ${
               state == "Search" ? "text-gray-900" : "text-gray-500"
             }`}
           >
@@ -344,15 +380,11 @@ const Navbar = ({ state, loading }) => {
           <Link
             name={data.me.id ? "Bookmarks" : ""}
             onClick={(e) =>
-              data.setAlert(
-                () => setTitle(e),
-                data.me.id,
-                "You are not logged in."
-              )
+              data.me.id ? setTitle(e) : showMsg("Please login")
             }
             to={data.me.id ? "/bookmarks" : ""}
             tooltip="Bookmarks"
-            className={`px-4 m-2 text-2xl flex  items-center justify-center cursor-pointe sm:after:absolute sm:after:left-[100%] sm:after:py-1 sm:after:px-2 sm:after:bg-gray-900 sm:after:rounded-lg sm:after:text-base sm:after:flex sm:after:items-center sm:after:justify-center sm:after:border-[1px] sm:after:border-gray-700 sm:after:text-white sm:after:opacity-0 sm:after:-translate-y-3 hover:sm:after:translate-y-0 hover:sm:after:opacity-100 hover:sm:after:transition-all sm:after:transition-none after:pointer-events-none sm:after:content-[attr(tooltip)] ${
+            className={`px-4 m-2 text-2xl flex  items-center justify-center cursor-pointe sm:after:absolute sm:after:left-[100%] sm:after:py-1 sm:after:px-2 sm:after:bg-gray-900 sm:after:rounded-lg sm:after:text-base sm:after:flex sm:after:items-center sm:after:justify-center sm:after:border-[1px] sm:after:border-gray-700 sm:after:text-white sm:after:opacity-0 sm:after:-translate-y-3 hover:sm:after:translate-y-0 hover:sm:after:opacity-100 hover:sm:after:transition-all sm:after:transition-none after:pointer-events-none sm:after:content-[attr(tooltip)] focus-visible:scale-110  focus-visible:text-gray-900 ${
               state == "Bookmarks" ? "text-gray-900" : "text-gray-500"
             }`}
           >
@@ -366,15 +398,11 @@ const Navbar = ({ state, loading }) => {
           <Link
             name={data.me.id ? "Write" : null}
             onClick={(e) =>
-              data.setAlert(
-                () => setTitle(e),
-                data.me.id,
-                "You are not logged in."
-              )
+              data.me.id ? setTitle(e) : showMsg("Please login")
             }
             to={data.me.id ? "/write" : null}
             tooltip="Write"
-            className={`px-4 m-2 text-2xl hidden sm:flex  items-center justify-center cursor-pointe sm:after:absolute sm:after:left-[100%] sm:after:py-1 sm:after:px-2 sm:after:bg-gray-900 sm:after:rounded-lg sm:after:text-base sm:after:flex sm:after:items-center sm:after:justify-center sm:after:border-[1px] sm:after:border-gray-700 sm:after:text-white sm:after:opacity-0 sm:after:-translate-y-3 hover:sm:after:translate-y-0 hover:sm:after:opacity-100 hover:sm:after:transition-all sm:after:transition-none after:pointer-events-none sm:after:content-[attr(tooltip)] ${
+            className={`px-4 m-2 text-2xl hidden sm:flex  items-center justify-center cursor-pointe sm:after:absolute sm:after:left-[100%] sm:after:py-1 sm:after:px-2 sm:after:bg-gray-900 sm:after:rounded-lg sm:after:text-base sm:after:flex sm:after:items-center sm:after:justify-center sm:after:border-[1px] sm:after:border-gray-700 sm:after:text-white sm:after:opacity-0 sm:after:-translate-y-3 hover:sm:after:translate-y-0 hover:sm:after:opacity-100 hover:sm:after:transition-all sm:after:transition-none after:pointer-events-none sm:after:content-[attr(tooltip)] focus-visible:scale-110  focus-visible:text-gray-900 ${
               state == "Write" ? "text-gray-900" : "text-gray-500"
             }`}
           >
@@ -388,7 +416,7 @@ const Navbar = ({ state, loading }) => {
               onClick={setTitle}
               to="/me/settings"
               tooltip="Settings"
-              className={`px-4 m-2 text-2xl hidden sm:flex  items-center justify-center cursor-pointe sm:after:absolute sm:after:left-[100%] sm:after:py-1 sm:after:px-2 sm:after:bg-gray-900 sm:after:rounded-lg sm:after:text-base sm:after:flex sm:after:items-center sm:after:justify-center sm:after:border-[1px] sm:after:border-gray-700 sm:after:text-white sm:after:opacity-0 sm:after:-translate-y-3 hover:sm:after:translate-y-0 hover:sm:after:opacity-100 hover:sm:after:transition-all sm:after:transition-none after:pointer-events-none sm:after:content-[attr(tooltip)] ${
+              className={`px-4 m-2 text-2xl hidden sm:flex  items-center justify-center cursor-pointe sm:after:absolute sm:after:left-[100%] sm:after:py-1 sm:after:px-2 sm:after:bg-gray-900 sm:after:rounded-lg sm:after:text-base sm:after:flex sm:after:items-center sm:after:justify-center sm:after:border-[1px] sm:after:border-gray-700 sm:after:text-white sm:after:opacity-0 sm:after:-translate-y-3 hover:sm:after:translate-y-0 hover:sm:after:opacity-100 hover:sm:after:transition-all sm:after:transition-none after:pointer-events-none sm:after:content-[attr(tooltip)] focus-visible:scale-110  focus-visible:text-gray-900 ${
                 state == "Settings" ? "text-gray-900" : "text-gray-500"
               }`}
             >
@@ -411,7 +439,7 @@ const Navbar = ({ state, loading }) => {
           onClick={setTitle}
           to="/me"
           tooltip="Profile"
-          className="flex items-center justify-center h-full sm:h-auto sm:w-full aspect-square sm:after:whitespace-pre sm:after:absolute sm:after:left-[100%] sm:after:py-1 sm:after:px-2 sm:after:bg-gray-900 sm:after:rounded-lg sm:after:text-base sm:after:flex sm:after:items-center sm:after:justify-center sm:after:border-[1px] sm:after:border-gray-700 sm:after:text-white sm:after:opacity-0 sm:after:-translate-y-3 hover:sm:after:translate-y-0 hover:sm:after:opacity-100 hover:sm:after:transition-all sm:after:transition-none after:pointer-events-none sm:after:content-[attr(tooltip)]"
+          className="flex items-center justify-center h-full sm:h-auto sm:w-full aspect-square sm:after:whitespace-pre sm:after:absolute sm:after:left-[100%] sm:after:py-1 sm:after:px-2 sm:after:bg-gray-900 sm:after:rounded-lg sm:after:text-base sm:after:flex sm:after:items-center sm:after:justify-center sm:after:border-[1px] sm:after:border-gray-700 sm:after:text-white sm:after:opacity-0 sm:after:-translate-y-3 hover:sm:after:translate-y-0 hover:sm:after:opacity-100 hover:sm:after:transition-all sm:after:transition-none after:pointer-events-none sm:after:content-[attr(tooltip)] focus-visible:scale-110  focus-visible:text-gray-900"
         >
           <div
             className={`m-3 aspect-square rounded-full overflow-hidden border-2 ${
@@ -443,10 +471,6 @@ const Navbar = ({ state, loading }) => {
 const Header = ({ loading, state }) => {
   const [data, setData] = useContext(Context);
 
-  const save = () => {
-    // pass
-  };
-
   return (
     <header
       className={`bg-white fixed sm:hidden ${
@@ -477,12 +501,7 @@ const Header = ({ loading, state }) => {
           Join
         </Link>
       ) : state == "Write" ? (
-        <button
-          onClick={save}
-          className="block px-8 py-2 bg-gray-900 text-white rounded-full mx-4 cursor-pointer active:scale-[0.98] active:opacity-90 transition-all"
-        >
-          Save
-        </button>
+        ""
       ) : state == "Me" ? (
         <Link
           onClick={setTitle}
@@ -516,8 +535,10 @@ const Tag = ({ tag, loading = false }) => {
       <Link
         name={`# ${tag.name}`}
         onClick={setTitle}
-        to={`/t/${tag.slug}`}
-        className={`mr-2 text-${genColor(tag.id)}`}
+        to={`/t/${tag.name}`}
+        className={`hover:underline focus-visible:underline mr-2 text-${genColor(
+          tag.id
+        )}`}
       >
         #<span className="text-gray-700">{tag.name}</span>
       </Link>
@@ -552,7 +573,6 @@ const Fallowing = ({ user, loading }) => {
       </Link>
     );
   }
-
 };
 
 const Post = ({ post = {}, loading }) => {
@@ -560,13 +580,25 @@ const Post = ({ post = {}, loading }) => {
   const [data, setData] = useContext(Context);
 
   const bookmark = () => {
-    data.setAlert(
-      () => {
-        setIsBookmark(!isBookmark);
-      },
-      data.me.id,
-      "You are not logged in."
-    );
+    if (data.me.id) {
+      $.ajax({
+        method: "POST",
+        url: `/api/@${post.user.username}/${post.slug}/bookmark`,
+        data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken, id: post.id },
+        success: (r) => {
+          if (r.result) {
+            setIsBookmark(!isBookmark);
+          } else {
+            showMsg("Server error");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+        },
+      });
+    } else {
+      showMsg("Please login");
+    }
   };
 
   return (
@@ -588,13 +620,15 @@ const Post = ({ post = {}, loading }) => {
             <img
               src={`${post.user.profile}`}
               alt={`${post.user.name}'s image`}
-              className="w-8 h-8 rounded-full "
+              className="w-8 h-8 rounded-full overflow-hidden"
             />
             <Link
               name={post.user.name}
               onClick={setTitle}
-              to={`/@${post.user.username}`}
-              className="font-semibold ml-3 max-w-[15ch] sm:max-w-[25ch] lg:max-w-[50ch] truncate"
+              to={
+                data.me.id == post.user.id ? "/me" : `/@${post.user.username}`
+              }
+              className="font-semibold ml-3 max-w-[15ch] sm:max-w-[25ch] lg:max-w-[50ch] truncate hover:underline focus-visible:underline"
             >
               {post.user.name}
             </Link>
@@ -604,7 +638,7 @@ const Post = ({ post = {}, loading }) => {
             </span>
             <span className="text-gray-500 mx-1 hidden sm:inline">•</span>
             <span className="text-gray-500 whitespace-pre hidden sm:inline">
-              {Math.ceil(post.text.split(" ").length / 200)} min read
+              {Math.ceil(cleanMd(post.text).split(" ").length / 200)} min read
             </span>
           </div>
         </div>
@@ -618,24 +652,30 @@ const Post = ({ post = {}, loading }) => {
         </div>
       ) : (
         <div className="body mt-2">
-          <h1 className="text-2xl font-bold w-10/12 truncate">
+          <h1
+            dir="auto"
+            className="text-2xl font-bold truncate hover:underline"
+          >
             <Link
               name={post.title}
               onClick={setTitle}
               to={`/@${post.user.username}/${post.slug}`}
+              className="hover:underline focus-visible:underline"
             >
               {post.title}
             </Link>
           </h1>
-          <p className="mt-1">{post.text.slice(0, 150)}...</p>
+          <p className="mt-1" dir="auto">
+            {cleanMd(post.text).slice(0, 150)}...
+          </p>
         </div>
       )}
 
       {loading ? (
         <div className="tags flex mt-3 items-center justify-between">
           <div className="relative flex items-center whitespace-pre w-9/12 overflow-hidden  ">
-            {[1, 2, 3, 4].map(() => (
-              <Tag loading={true} />
+            {[1, 2, 3, 4].map((i) => (
+              <Tag loading={true} id={i} />
             ))}
           </div>
         </div>
@@ -647,14 +687,21 @@ const Post = ({ post = {}, loading }) => {
             ))}
           </div>
 
-          <div className="flex">
-            <i
-              onClick={bookmark}
-              className={`bi bi-bookmark-${
-                isBookmark ? "fill" : "plus"
-              } p-1 cursor-pointer mx-1  `}
-            ></i>
-            <i className="bi bi-three-dots pr-0 p-1 cursor-pointer mx-1"></i>
+          <div className="flex relative">
+            <button onClick={bookmark} className="focus-visible:scale-110">
+              <i
+                className={`bi bi-bookmark-${
+                  isBookmark ? "fill" : "plus"
+                } p-1 cursor-pointer mx-1  `}
+              ></i>
+            </button>
+
+            {/* <i className="bi bi-three-dots pr-0 p-1 cursor-pointer mx-1"></i>
+            <ul class="absolute right-1/2 bottom-1/2 rounded-xl shadow-xl bg-gray-100 overflow-hidden">
+              <li class="hover:bg-gray-200">Share this post</li>
+              <li>Not interseting</li>
+              <li>Block user</li>
+            </ul> */}
           </div>
         </div>
       )}
@@ -663,95 +710,299 @@ const Post = ({ post = {}, loading }) => {
 };
 
 const Home = ({}) => {
-  const [posts, setPosts] = useState({ rec: [], fallowings: [], latests: [] });
+  const [fallowings, setFallowings] = useState({ items: [], hasNext: true });
+  const [rec, setRec] = useState({ items: [], hasNext: true });
+  const [latests, setLatests] = useState({ items: [], hasNext: true });
+  const [fallowingUsers, setFallowingUsers] = useState({
+    items: [],
+    hasNext: true,
+  });
+  const [tags, setTags] = useState({ items: [], hasNext: true });
+
   const [state, setState] = useState("rec");
-  const [isReady, setIsReady] = useState(false);
-  const [tags, setTags] = useState([]);
-  const [fallowings, setFallowings] = useState([]);
   const [data, setData] = useContext(Context);
+
+  const getRec = () => {
+    if (rec.hasNext) {
+      $.ajax({
+        method: "POST",
+        url: "/api/rec",
+        data: {
+          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+          page: rec.items.length / 15 + 1,
+        },
+        success: (r) => {
+          if (r.result) {
+            r["items"] = rec.items.concat(r.items);
+            r["isReady"] = true;
+            setRec(r);
+          } else {
+            showMsg("An unexpected error occurred");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+          setTimeout(getRec, 10000);
+        },
+      });
+    }
+  };
+  const getLatests = () => {
+    if (latests.hasNext) {
+      $.ajax({
+        method: "POST",
+        url: "/api/latests",
+        data: {
+          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+          page: latests.items.length / 15 + 1,
+        },
+        success: (r) => {
+          if (r.result) {
+            r["items"] = latests.items.concat(r.items);
+            r["isReady"] = true;
+            setLatests(r);
+          } else {
+            showMsg("An unexpected error occurred");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+          setTimeout(getLatests, 10000);
+        },
+      });
+    }
+  };
+  const getFallowings = () => {
+    if (fallowings.hasNext) {
+      $.ajax({
+        method: "POST",
+        url: "/api/fallowings",
+        data: {
+          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+          page: fallowings.items.length / 15 + 1,
+        },
+        success: (r) => {
+          if (r.result) {
+            r["items"] = fallowings.items.concat(r.items);
+            r["isReady"] = true;
+            setFallowings(r);
+          } else {
+            showMsg("An unexpected error occurred");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+          setTimeout(getFallowings, 10000);
+        },
+      });
+    }
+  };
+  const getFallowingUsers = () => {
+    if (fallowingUsers.hasNext) {
+      $.ajax({
+        method: "POST",
+        url: "/api/me/fallowings",
+        data: {
+          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+          page: fallowingUsers.items.length / 15 + 1,
+        },
+        success: (r) => {
+          if (r.result) {
+            r["items"] = fallowingUsers.items.concat(r.items);
+            r["isReady"] = true;
+            setFallowingUsers(r);
+          } else {
+            showMsg("An unexpected error occurred");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+          setTimeout(getFallowingUsers, 10000);
+        },
+      });
+    }
+  };
+  const getTags = () => {
+    if (tags.hasNext) {
+      $.ajax({
+        method: "POST",
+        url: "/api/me/tags",
+        data: {
+          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+          page: tags.items.length / 15 + 1,
+        },
+        success: (r) => {
+          if (r.result) {
+            r["items"] = tags.items.concat(r.items);
+            r["isReady"] = true;
+            setTags(r);
+          } else {
+            showMsg("An unexpected error occurred");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+          setTimeout(getTags, 10000);
+        },
+      });
+    }
+  };
+
   useEffect(() => {
-    // emulate give from server
-    setData({...data,["me"]: tempuser});
-    setTimeout(() => {
-      setTags(temptags);
-      setFallowings([tempminiuser]);
-      setPosts({ ...posts, ["rec"]: [tempminipost] });
-      setIsReady(true);
-    }, 1000);
+    getMyInfo([data, setData]); // update user
   }, [1]);
+
+  useEffect(() => {
+    getRec();
+    if (data.me.id) {
+      getFallowingUsers();
+      getTags();
+    }
+  }, [data]);
+
+  useEffect(() => {
+    const lastChild = document.querySelector(".postsContainer > *:last-child");
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          if (state == "rec") {
+            // setRec({...rec,['loading']: true});
+            // if (!rec.loading){
+            getRec();
+            // }
+          } else if (state == "latests") {
+            // setLatests({...latests,['loading']: true});
+            // if (!latests.loading){
+            getLatests();
+            // }
+          } else if (state == "fallowings") {
+            // setFallowings({...fallowings,['loading']: true});
+            // if (!fallowings.loading){
+            getFallowings();
+            // }
+          }
+        }
+      });
+    });
+    if (lastChild) {
+      observer.observe(lastChild);
+    }
+  }, [rec, fallowings, latests]);
+
+  useEffect(() => {
+    const lastChild = document.querySelector(".tagsContainer > *:last-child");
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          // setTags({...tags,['loading']: true})
+          // if (!tags.loading){
+          getTags();
+          // }
+        }
+      });
+    });
+    if (lastChild) {
+      observer.observe(lastChild);
+    }
+  }, [tags]);
+
+  useEffect(() => {
+    const lastChild = document.querySelector(
+      ".fallowingUsersContainer > *:last-child"
+    );
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          // setFallowingUsers({...fallowingUsers,['loading']: true});
+          // if (!fallowingUsers.loading){
+          getFallowingUsers();
+        }
+        // }
+      });
+    });
+    if (lastChild) {
+      observer.observe(lastChild);
+    }
+  }, [fallowingUsers]);
 
   return (
     <main>
       <main className="mt-16 mb-16 sm:m-0 sm:ml-16 flex items-center justify-center">
-        {isReady ? (
-          <section className="p-6 max-w-6xl w-full">
+        <section className="p-6 max-w-6xl w-full">
+          {data.me.id ? (
             <div className="flex items-center justify-start">
               <span className="text-gray-600 whitespace-pre">Tags:</span>
-              <div className="overflow-auto ml-3 flex items-center whitespace-pre ">
-                {tags.map((t) => (
-                  <Tag tag={t} id={t.id} />
-                ))}
+              <div className="overflow-auto ml-3 flex items-center whitespace-pre tagsContainer">
+                {tags.isReady
+                  ? tags.items.map((t) => <Tag tag={t} id={t.id} />)
+                  : [1, 2, 3].map((i) => <Tag loading={true} id={i} />)}
               </div>
             </div>
-
-            <div className="py-2 my-4 flex overflow-auto">
-              {fallowings.map((u) => (
-                <Fallowing user={u} id={u.id} />
-              ))}
+          ) : (
+            ""
+          )}
+          {data.me.id ? (
+            <div className="py-2 my-4 flex overflow-auto fallowingUsersContainer">
+              {fallowingUsers.isReady
+                ? fallowingUsers.items.map((u) => (
+                    <Fallowing user={u} id={u.id} />
+                  ))
+                : [1, 2, 3].map((i) => <Fallowing loading={true} id={i} />)}
             </div>
-
+          ) : (
+            ""
+          )}
+          {rec.isReady ? (
             <div className="border-b-2 text-sm sm:text-base flex justify-between sm:block">
               <button
-                onClick={() => setState("rec")}
-                className={`transition-all py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto ${
+                onClick={() => {
+                  if (rec.items.length == 0) {
+                    getRec();
+                  }
+                  setState("rec");
+                }}
+                className={`transition-all py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto focus-visible:scale-110  focus-visible:opacity-100 ${
                   state == "rec" ? "border-gray-900" : "opacity-[0.75]"
                 }`}
               >
                 Suggestions
               </button>
+              {data.me.id ? (
+                <button
+                  onClick={() => {
+                    if (fallowings.items.length == 0) {
+                      getFallowings();
+                    }
+
+                    setState("fallowings");
+                  }}
+                  className={`transition-all py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto focus-visible:scale-110  focus-visible:opacity-100 ${
+                    state == "fallowings" ? "border-gray-900" : "opacity-[0.75]"
+                  }`}
+                >
+                  Fallowings
+                </button>
+              ) : (
+                ""
+              )}
               <button
-                onClick={() => setState("fallowings")}
-                className={`transition-all py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto ${
-                  state == "fallowings" ? "border-gray-900" : "opacity-[0.75]"
-                }`}
-              >
-                Fallowings
-              </button>
-              <button
-                onClick={() => setState("latests")}
-                className={`transition-all py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto ${
+                onClick={() => {
+                  if (latests.items.length == 0) {
+                    getLatests();
+                  }
+                  setState("latests");
+                }}
+                className={`transition-all py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto focus-visible:scale-110  focus-visible:opacity-100 ${
                   state == "latests" ? "border-gray-900" : "opacity-[0.75]"
                 }`}
               >
                 latests
               </button>
             </div>
-            <div>
-              {state == "rec" &&
-                posts.rec.map((p) => <Post post={p} id={p.id} />)}
-              {state == "fallowings" &&
-                posts.fallowings.map((p) => <Post post={p} id={p.id} />)}
-              {state == "latests" &&
-                posts.latests.map((p) => <Post post={p} id={p.id} />)}
-            </div>
-          </section>
-        ) : (
-          <section className="p-6 max-w-6xl w-full">
-            <div className="flex items-center justify-start">
-              <span className="text-gray-600 whitespace-pre">Tags:</span>
-              <div className="overflow-hiden ml-3 flex items-center whitespace-pre ">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
-                  <Tag loading={true} id={i} />
-                ))}
-              </div>
-            </div>
-
-            <div className="py-2 my-4 flex overflow-hidden">
-              {[1, 2, 3].map((i) => (
-                <Fallowing loading={true} id={i} />
-              ))}
-            </div>
-
+          ) : (
             <div className="border-b-2 text-sm sm:text-base flex justify-between sm:block">
               <button className="py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto">
                 <div className="fadeInLoad relative rounded-full h-5 w-20 bg-gray-200" />
@@ -763,52 +1014,128 @@ const Home = ({}) => {
                 <div className="fadeInLoad relative rounded-full h-5 w-20 bg-gray-200" />
               </button>
             </div>
-            <div>
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Post loading={true} id={i} />
-              ))}
-            </div>
-          </section>
-        )}
+          )}
+          <div className="postsContainer">
+            {state == "rec" &&
+              rec.items.map((p) => <Post post={p} id={p.id} />)}
+            {state == "fallowings" &&
+              fallowings.items.map((p) => <Post post={p} id={p.id} />)}
+            {state == "latests" &&
+              latests.items.map((p) => <Post post={p} id={p.id} />)}
+
+            {((state == "rec" && rec.hasNext && rec.isReady) ||
+              (state == "fallowings" &&
+                fallowings.hasNext &&
+                fallowings.isReady) ||
+              (state == "latests" && latests.hasNext && latests.isReady)) && (
+              <Loading />
+            )}
+            {((state == "rec" && !rec.isReady) ||
+              (state == "fallowings" && !fallowings.isReady) ||
+              (state == "latests" && !latests.isReady)) &&
+              [1, 2, 3, 4, 5].map((i) => <Post loading={true} id={i} />)}
+          </div>
+        </section>
       </main>
     </main>
   );
 };
 
 const TagView = ({}) => {
-  const [tag, setTag] = useState(null);
+  const [tag, setTag] = useState({});
+  const [posts, setPosts] = useState({ items: [], hasNext: true });
   const [data, setData] = useContext(Context);
-  const [isReady, setIsReady] = useState(false);
   const url = useParams();
-  useEffect(() => {
-    // emulate give from server
-    setTimeout(() => {
-      setTag({
-        id: 54,
-        name: "Python",
-        fallowers: 14003,
-        posts: [tempminipost],
+
+  const getTag = () => {
+    $.ajax({
+      method: "POST",
+      url: `/api/t/${url.name}`,
+      data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken },
+      success: (r) => {
+        if (r.result) {
+          setTag({ ...r.tag, ["isReady"]: true });
+        } else {
+          showMsg("Server error");
+        }
+      },
+      error: () => {
+        showMsg("An unknown nerwoek error has occurred");
+      },
+    });
+  };
+  const getPosts = () => {
+    if (posts.hasNext) {
+      $.ajax({
+        method: "POST",
+        url: `/api/posts/${url.name}`,
+        data: {
+          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+          page: posts.items.length / 15 + 1,
+        },
+        success: (r) => {
+          if (r.result) {
+            r["items"] = posts.items.concat(r.items);
+            r["isReady"] = true;
+            setPosts(r);
+          } else {
+            showMsg("Server error");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+          setTimeout(getPosts, 10000);
+        },
       });
-      setData({...data,["me"]: tempuser});
-      setIsReady(true);
-    }, 1000);
+    }
+  };
+  useEffect(() => {
+    const lastChild = document.querySelector(".postsContainer > *:last-child");
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          getPosts();
+        }
+      });
+    });
+    if (lastChild) {
+      observer.observe(lastChild);
+    }
+  }, [posts]);
+
+  useEffect(() => {
+    getTag();
+    getMyInfo([data, setData]);
+    getPosts();
   }, [1]);
 
   const fallow = () => {
-    data.setAlert(
-      () => {
-        // send to server
-        setTag({ ...tag, ["fallowed"]: !tag.fallowed });
-      },
-      data.me.id,
-      "You are not logged in."
-    );
+    if (data.me.id) {
+      $.ajax({
+        method: "POST",
+        url: `/api/fallow/${tag.name}`,
+        data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken, id: tag.id },
+        success: (r) => {
+          if (r.result) {
+            setTag({ ...tag, ["fallowed"]: !tag.fallowed });
+          } else {
+            showMsg("Server error");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+        },
+      });
+    } else {
+      showMsg("Please login");
+    }
   };
   return (
     <main>
-      {isReady ? (
-        <main className="mt-16 mb-16 sm:m-0 sm:ml-16 flex items-center justify-center">
-          <section className="p-6 max-w-6xl w-full">
+      <main className="mt-16 mb-16 sm:m-0 sm:ml-16 flex items-center justify-center">
+        <section className="p-6 max-w-6xl w-full">
+          {tag.isReady ? (
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <span
@@ -828,7 +1155,7 @@ const TagView = ({}) => {
               </div>
               <button
                 onClick={fallow}
-                className={`py-1 px-3 rounded-full active:scale-[0.98] transition-all ${
+                className={`py-1 px-3 rounded-full active:scale-[0.98] transition-all focus-visible:scale-110 ${
                   tag.fallowed
                     ? "text-indigo-500 border-2 border-indigo-500 bg-white"
                     : "text-white bg-indigo-500"
@@ -837,22 +1164,7 @@ const TagView = ({}) => {
                 {tag.fallowed ? "Unfallow" : "Fallow"}
               </button>
             </div>
-
-            <div className="mt-8 border-b-2 border-gray-400 flex ">
-              <button className="py-2 px-3 border-b-2 border-gray-900 translate-y-[2px] ">
-                Home
-              </button>
-            </div>
-            <div className="posts">
-              {tag.posts.map((p) => (
-                <Post post={p} id={p.id} />
-              ))}
-            </div>
-          </section>
-        </main>
-      ) : (
-        <main className="mt-16 mb-16 sm:m-0 sm:ml-16 flex items-center justify-center">
-          <section className="p-6 max-w-6xl w-full">
+          ) : (
             <div className="flex items-center justify-between">
               <div className="flex items-center overflow-hidden relative fadeInLoad">
                 <span className="text-gray-200 text-7xl sm:text-8xl mr-2 ">
@@ -865,20 +1177,30 @@ const TagView = ({}) => {
               </div>
               <div className="py-1 px-3 rounded-full bg-gray-200 relative fadeInLoad overflow-hidden  w-20 h-8" />
             </div>
+          )}
 
+          {posts.isReady ? (
+            <div className="mt-8 border-b-2 border-gray-400 flex ">
+              <button className="py-2 px-3 border-b-2 border-gray-900 translate-y-[2px] ">
+                Home
+              </button>
+            </div>
+          ) : (
             <div className="tm-4 border-b-2 flex ">
               <button className="py-2 px-3 translate-y-[2px] border-b-2">
                 <div className="fadeInLoad relative rounded-full h-5 w-20 bg-gray-200" />
               </button>
             </div>
-            <div>
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Post loading={true} id={i} />
-              ))}
-            </div>
-          </section>
-        </main>
-      )}
+          )}
+
+          <div className="postsContainer">
+            {posts.isReady
+              ? posts.items.map((p) => <Post post={p} id={p.id} />)
+              : [1, 2, 3, 4, 5].map((i) => <Post loading={true} id={i} />)}
+            {posts.hasNext && posts.isReady ? <Loading /> : ""}
+          </div>
+        </section>
+      </main>
     </main>
   );
 };
@@ -888,14 +1210,25 @@ const PeopleItem = ({ user = {}, inSearch, loading }) => {
   const [fallowed, setFallowed] = useState(user.fallowed);
 
   const fallow = () => {
-    data.setAlert(
-      () => {
-        // send to server
-        setFallowed(!fallowed);
-      },
-      data.me.id,
-      "You are not logged in."
-    );
+    if (data.me.id) {
+      $.ajax({
+        method: "POST",
+        url: `/api/fallow/@${user.username}`,
+        data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken, id: user.id },
+        success: (r) => {
+          if (r.result) {
+            setFallowed(!fallowed);
+          } else {
+            showMsg("Server error");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+        },
+      });
+    } else {
+      showMsg("Please login");
+    }
   };
 
   return (
@@ -935,7 +1268,7 @@ const PeopleItem = ({ user = {}, inSearch, loading }) => {
       ) : (
         <button
           onClick={fallow}
-          className={`py-1 px-3 mx-2 rounded-full active:scale-[0.98] transition-all border-2 border-indigo-500 ${
+          className={`py-1 px-3 mx-2 rounded-full active:scale-[0.98] transition-all border-2 border-indigo-500 focus-visible:scale-110 ${
             fallowed ? "text-indigo-500 bg-white" : "text-white bg-indigo-500"
           } `}
         >
@@ -951,14 +1284,25 @@ const TagItem = ({ tag = {}, loading }) => {
   const [fallowed, setFallowed] = useState(tag.fallowed);
 
   const fallow = () => {
-    data.setAlert(
-      () => {
-        // send to server
-        setFallowed(!fallowed);
-      },
-      data.me.id,
-      "You are not logged in."
-    );
+    if (data.me.id) {
+      $.ajax({
+        method: "POST",
+        url: `/api/fallow/${tag.name}`,
+        data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken, id: tag.id },
+        success: (r) => {
+          if (r.result) {
+            setFallowed(!fallowed);
+          } else {
+            showMsg("Server error");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+        },
+      });
+    } else {
+      showMsg("Please login");
+    }
   };
 
   return (
@@ -972,31 +1316,35 @@ const TagItem = ({ tag = {}, loading }) => {
           </div>
         </div>
       ) : (
-        <Link
-          name={`# ${tag.name}`}
-          onClick={setTitle}
-          to={`/t/${tag.slug}`}
-          className="flex items-center w-full"
-        >
+        <div className="flex items-center w-full">
           <span
             className={`text-${genColor(tag.id)} text-6xl sm:text-7xl mr-2 `}
           >
             #
           </span>
           <div className="ml-2 w-full overflow-hidden">
-            <h1 className="text-xl truncate">{tag.name}</h1>
+            <h1 className="text-xl truncate hover:underline ">
+              <Link
+                name={`# ${tag.name}`}
+                onClick={setTitle}
+                to={`/t/${tag.name}`}
+                className="hover:underline focus-visible:underline"
+              >
+                {tag.name}
+              </Link>
+            </h1>
             <span className="text-gray-500 whitespace-pre">
               {nFormatter(tag.fallowers)} Fallowers
             </span>
           </div>
-        </Link>
+        </div>
       )}
       {loading ? (
         <div className="py-1 px-3 rounded-full bg-gray-200 relative fadeInLoad overflow-hidden  w-20 h-8" />
       ) : (
         <button
           onClick={fallow}
-          className={`py-1 px-3 mx-2 rounded-full active:scale-[0.98] transition-all border-2 border-indigo-500 ${
+          className={`py-1 px-3 mx-2 rounded-full active:scale-[0.98] transition-all border-2 border-indigo-500 focus-visible:scale-110 ${
             fallowed ? "text-indigo-500  bg-white" : "text-white bg-indigo-500"
           } `}
         >
@@ -1010,21 +1358,174 @@ const TagItem = ({ tag = {}, loading }) => {
 const SearchView = ({}) => {
   const [data, setData] = useContext(Context);
   const [state, setState] = useState("posts");
-  const [result, setResult] = useState({
-    tags: temptags,
-    people: [],
-    posts: [],
-  });
+  const [time, setTime] = useState(null);
+  const [topPosts, setTopPosts] = useState({ items: [], hasNext: true });
+  const [topUsers, setTopUsers] = useState({ items: [], hasNext: true });
+  const [topTags, setTopTags] = useState({ items: [], hasNext: true });
+  const [posts, setPosts] = useState({ items: [], hasNext: true });
+  const [tags, setTags] = useState({ items: [], hasNext: true });
+  const [users, setUsers] = useState({ items: [], hasNext: true });
 
-  const search = (e) => {
-    // send to server
-    // const text = e.target.value;
+  const [searchValue, setSearchValue] = useState("");
+
+  const getTopPosts = () => {
+    if (topPosts.hasNext) {
+      $.ajax({
+        method: "POST",
+        url: "/api/top-posts",
+        data: {
+          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+          page: topPosts.items.length / 15 + 1,
+        },
+        success: (r) => {
+          if (r.result) {
+            r["items"] = topPosts.items.concat(r.items);
+            r["isReady"] = true;
+
+            setTopPosts(r);
+          } else {
+            showMsg("An unexpected error occurred");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+          setTimeout(getTopPosts, 10000);
+        },
+      });
+    }
   };
+
+  const getTopUsers = () => {
+    if (topUsers.hasNext) {
+      $.ajax({
+        method: "POST",
+        url: "/api/top-users",
+        data: {
+          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+          page: topUsers.items.length / 15 + 1,
+        },
+        success: (r) => {
+          if (r.result) {
+            r["items"] = topUsers.items.concat(r.items);
+            r["isReady"] = true;
+
+            setTopUsers(r);
+          } else {
+            showMsg("An unexpected error occurred");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+          setTimeout(getTopUsers, 10000);
+        },
+      });
+    }
+  };
+
+  const getTopTags = () => {
+    if (topTags.hasNext) {
+      $.ajax({
+        method: "POST",
+        url: "/api/top-tags",
+        data: {
+          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+          page: topTags.items.length / 15 + 1,
+        },
+        success: (r) => {
+          if (r.result) {
+            r["items"] = topTags.items.concat(r.items);
+            r["isReady"] = true;
+            setTopTags(r);
+          } else {
+            showMsg("An unexpected error occurred");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+          setTimeout(getTopTags, 10000);
+        },
+      });
+    }
+  };
+
+  const search = () => {
+    clearTimeout(time);
+    if (searchValue.replace(/\s+/g, "").length) {
+      setTime(
+        setTimeout(() => {
+          $.ajax({
+            method: "POST",
+            url: `/api/search-${state}`,
+            data: {
+              csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+              text: searchValue,
+              page: posts.items.length / 15 + 1,
+            },
+            success: (r) => {
+              if (r.result) {
+                if (state == "users") {
+                  r["isReady"] = true;
+                  setUsers(r);
+                } else if (state == "tags") {
+                  r["isReady"] = true;
+                  setTags(r);
+                } else if (state == "posts") {
+                  r["isReady"] = true;
+                  setPosts(r);
+                }
+              } else {
+                showMsg("Server error");
+              }
+            },
+            error: () => {
+              showMsg("An unknown nerwoek error has occurred");
+              setTimeout(search, 10000);
+            },
+          });
+        }, 500)
+      );
+    }
+  };
+
   useEffect(() => {
-    // emulate give from server
-    setData({...data,["me"]: tempuser});
+    getMyInfo([data, setData]);
+    getTopPosts();
   }, [1]);
 
+  useEffect(() => {
+    search();
+  }, [searchValue, state]);
+
+  useEffect(() => {
+    const lastChild = document.querySelector(".searchContainer > *:last-child");
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          if (searchValue.replace(/\s+/g, "").length) {
+            if (
+              (state == "tags" && tags.hasNext) ||
+              (state == "users" && users.hasNext) ||
+              (state == "posts" && posts.hasNext)
+            ) {
+              search();
+            }
+          } else {
+            if (state == "posts") {
+              getTopPosts();
+            } else if (state == "users") {
+              getTopUsers();
+            } else if (state == "tags") {
+              getTopTags();
+            }
+          }
+        }
+      });
+    });
+    if (lastChild) {
+      observer.observe(lastChild);
+    }
+  }, [topUsers, topTags, topPosts, posts, users, tags]);
 
   return (
     <main>
@@ -1035,56 +1536,125 @@ const SearchView = ({}) => {
             <input
               type="text"
               placeholder="Search"
-              onChange={search}
+              onChange={(e) => setSearchValue(e.target.value)}
               dir="auto"
-              className="focus:border-0 focus:outline-0 text-lg sm:text-xl w-full mx-2"
+              className="focus:border-0 text-lg sm:text-xl w-full mx-2"
             />
           </div>
-          {result.posts.length +
-          result.people.length +
-          result.tags.length ? (
-            <div>
-              <div className="mt-8 border-b-2 text-sm sm:text-base flex justify-between sm:block">
-                <button
-                  onClick={() => setState("posts")}
-                  className={`transition-all py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto ${
-                    state == "posts" ? "border-gray-900" : "opacity-[0.75]"
-                  }`}
-                >
-                  Posts
-                </button>
-                <button
-                  onClick={() => setState("people")}
-                  className={`transition-all py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto ${
-                    state == "people" ? "border-gray-900" : "opacity-[0.75]"
-                  }`}
-                >
-                  People
-                </button>
-                <button
-                  onClick={() => setState("tags")}
-                  className={`transition-all py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto ${
-                    state == "tags" ? "border-gray-900" : "opacity-[0.75]"
-                  }`}
-                >
-                  Tags
-                </button>
-              </div>
-              <div>
-                {state == "posts" &&
-                  result.posts &&
-                  result.posts.map((i) => <Post post={i} id={i.id} />)}
-                {state == "people" &&
-                  result.people &&
-                  result.people.map((i) => <PeopleItem user={i} id={i.id} />)}
-                {state == "tags" &&
-                  result.tags &&
-                  result.tags.map((i) => <TagItem tag={i} id={i.id} />)}
-              </div>
+          <div>
+            <div className="mt-8 border-b-2 text-sm sm:text-base flex justify-between sm:block">
+              <button
+                onClick={() => {
+                  setState("posts");
+                  if (topPosts.items.length == 0 && !searchValue.length) {
+                    getTopPosts();
+                  }
+                }}
+                className={`transition-all py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto focus-visible:scale-110  focus-visible:opacity-100 ${
+                  state == "posts" ? "border-gray-900" : "opacity-[0.75]"
+                }`}
+              >
+                Posts
+              </button>
+              <button
+                onClick={() => {
+                  setState("users");
+                  if (topUsers.items.length == 0 && !searchValue.length) {
+                    getTopUsers();
+                  }
+                }}
+                className={`transition-all py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto focus-visible:scale-110  focus-visible:opacity-100 ${
+                  state == "users" ? "border-gray-900" : "opacity-[0.75]"
+                }`}
+              >
+                Users
+              </button>
+              <button
+                onClick={() => {
+                  setState("tags");
+                  if (topTags.items.length == 0 && !searchValue.length) {
+                    getTopTags();
+                  }
+                }}
+                className={`transition-all py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto focus-visible:scale-110  focus-visible:opacity-100 ${
+                  state == "tags" ? "border-gray-900" : "opacity-[0.75]"
+                }`}
+              >
+                Tags
+              </button>
             </div>
-          ) : (
-            ""
-          )}
+            <div className="searchContainer">
+              {/* {items()} */}
+              {searchValue.replace(/\s+/g, "")
+                ? state == "posts"
+                  ? posts.isReady
+                    ? posts.items.map((i) => <Post post={i} id={i.id} />)
+                    : [1, 2, 3, 4, 5].map((i) => <Post loading={true} id={i} />)
+                  : state == "users"
+                  ? users.isReady
+                    ? users.items.map((i) => (
+                        <PeopleItem user={i} inSearch={true} id={i.id} />
+                      ))
+                    : [1, 2, 3, 4, 5].map((i) => (
+                        <PeopleItem loading={true} id={i} />
+                      ))
+                  : state == "tags"
+                  ? tags.isReady
+                    ? tags.items.map((i) => <TagItem tag={i} id={i.id} />)
+                    : [1, 2, 3, 4, 5].map((i) => (
+                        <TagItem loading={true} id={i} />
+                      ))
+                  : ""
+                : state == "posts"
+                ? topPosts.isReady
+                  ? topPosts.items.map((i) => <Post post={i} id={i.id} />)
+                  : [1, 2, 3, 4, 5].map((i) => <Post loading={true} id={i} />)
+                : state == "users"
+                ? topUsers.isReady
+                  ? topUsers.items.map((i) => <PeopleItem user={i} id={i.id} />)
+                  : [1, 2, 3, 4, 5].map((i) => (
+                      <PeopleItem loading={true} id={i} />
+                    ))
+                : state == "tags"
+                ? topTags.isReady
+                  ? topTags.items.map((i) => <TagItem tag={i} id={i.id} />)
+                  : [1, 2, 3, 4, 5].map((i) => (
+                      <TagItem loading={true} id={i} />
+                    ))
+                : ""}
+              {/* {state == "posts" &&
+                ( ? posts : topPosts).items.map(
+                  (i) => <Post post={i} id={i.id} />
+                )}
+              {state == "users" &&
+                (searchValue.replace(/\s+/g, "") ? users : topUsers).items.map(
+                  (i) => <PeopleItem user={i} id={i.id} />
+                )}
+              {state == "tags" &&
+                (searchValue.replace(/\s+/g, "") ? tags : topTags).items.map(
+                  (i) => <TagItem tag={i} id={i.id} />
+                )} */}
+
+              {((state == "posts" && posts.hasNext && posts.isReady) ||
+                (state == "tags" && tags.hasNext && tags.isReady) ||
+                (state == "users" && users.hasNext && users.isReady) ||
+                (state == "posts" && topPosts.hasNext && topPosts.isReady) ||
+                (state == "tags" && topTags.hasNext && topTags.isReady) ||
+                (state == "users" && topUsers.hasNext && topUsers.isReady)) && (
+                <Loading />
+              )}
+              {/* {state == "posts" &&
+                (!posts.isReady || !topPosts.isReady) &&
+                [1, 2, 3, 4, 5].map((i) => <Post loading={true} id={i} />)}
+              {state == "users" &&
+                (!users.isReady || !topUsers.isReady) &&
+                [1, 2, 3, 4, 5].map((i) => (
+                  <PeopleItem loading={true} id={i} />
+                ))}
+              {((state == "tags" && !tags.isReady) || !topTags.isReady) &&
+                [1, 2, 3, 4, 5].map((i) => <TagItem loading={true} id={i} />)} */}
+            </div>
+          </div>
         </section>
       </main>
     </main>
@@ -1092,16 +1662,55 @@ const SearchView = ({}) => {
 };
 
 const BookmarkView = ({}) => {
-  const [bookmarks, setBookmarks] = useState([]);
-  const [isReady, setIsReady] = useState(false);
+  const [bookmarks, setBookmarks] = useState({ items: [], hasNext: true });
   const [data, setData] = useContext(Context);
+
+  const getBookmarks = () => {
+    if (bookmarks.hasNext) {
+      $.ajax({
+        method: "POST",
+        url: "/api/me/bookmarks",
+        data: {
+          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+          page: bookmarks.items.length / 15 + 1,
+        },
+        success: (r) => {
+          if (r.result) {
+            r["items"] = bookmarks.items.concat(r.items);
+            r["isReady"] = true;
+            setBookmarks(r);
+          } else {
+            showMsg("Server error");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+          setTimeout(getBookamrks, 10000);
+        },
+      });
+    }
+  };
+
   useEffect(() => {
-    // emulate give from server
-    setData({...data,["me"]: tempuser});
-    setTimeout(() => {
-      setBookmarks([]);
-      setIsReady(true);
-    }, 1000);
+    const lastChild = document.querySelector(
+      ".bookmarksContainer > *:last-child"
+    );
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          getBookmarks();
+        }
+      });
+    });
+    if (lastChild) {
+      observer.observe(lastChild);
+    }
+  }, [bookmarks]);
+
+  useEffect(() => {
+    getMyInfo([data, setData]);
+    getBookmarks();
   }, [1]);
 
   return (
@@ -1111,9 +1720,9 @@ const BookmarkView = ({}) => {
           <h1 className="text-3xl border-b-2 border-gray-300 mb-2 py-2">
             Bookmarks
           </h1>
-          {isReady ? (
-            <div>
-              {bookmarks.map((p) => (
+          {bookmarks.isReady ? (
+            <div className="bookmarksContainer">
+              {bookmarks.items.map((p) => (
                 <Post post={p} id={p.id} />
               ))}
             </div>
@@ -1124,6 +1733,7 @@ const BookmarkView = ({}) => {
               ))}
             </div>
           )}
+          {bookmarks.hasNext && bookmarks.isReady ? <Loading /> : ""}
         </section>
       </main>
     </main>
@@ -1132,51 +1742,225 @@ const BookmarkView = ({}) => {
 
 const WriteView = ({}) => {
   const [data, setData] = useContext(Context);
-  const [post, setPost] = useState({});
   const [messages, setMessages] = useState({});
   const [isPreview, setIsPreview] = useState(false);
+  const [crntTags, setCrntTags] = useState({ items: [], hasNext: true });
+  const [topTags, setTopTags] = useState({ items: [], hasNext: true });
+  const [srchTag, setSrchTag] = useState("");
+  const [saved, setSaved] = useState(false);
 
+  const url = useParams();
+  const [post, setPost] = useState({
+    csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+  });
+  const [apiPath, setApiPath] = useState(
+    url.id ? `/api/write/${url.id}` : "/api/write"
+  );
+  const getTopTags = () => {
+    if (topTags.hasNext) {
+      $.ajax({
+        method: "POST",
+        url: `/api/top-tags`,
+        data: {
+          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+          page: topTags.items.length / 15 + 1,
+        },
+        success: (r) => {
+          if (r.result) {
+            r["items"] = topTags.items.concat(r.items);
+            r["isReady"] = true;
+            setTopTags(r);
+          } else {
+            showMsg("Server error");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+          setTimeout(getTopTag, 10000);
+        },
+      });
+    }
+  };
+  const getPost = () => {
+    $.ajax({
+      method: "POST",
+      url: `/api/p/${url.id}`,
+      data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken },
+      success: (r) => {
+        if (r.result) {
+          setSaved(true);
+          setPost({
+            ...r,
+            ["csrfmiddlewaretoken"]: data.csrfmiddlewaretoken,
+          });
+        } else {
+          showMsg("Server error");
+        }
+      },
+      error: () => {
+        showMsg("An unknown nerwoek error has occurred");
+        setTimeout(getPost, 10000);
+      },
+    });
+  };
   useEffect(() => {
-    // emulate give from server
-    setData({...data,["me"]: tempuser});
+    if (url.id) {
+      getPost();
+    }
+    getTopTags();
+    getMyInfo([data, setData]);
   }, [1]);
 
   const handleChange = (e) => {
+    setSaved(false);
     setPost({ ...post, ["date"]: new Date().getTime() });
     setPost({ ...post, [e.target.name]: e.target.value });
   };
   const handleUpload = () => {
-    // pass
+    showMsg("This section still not work");
   };
 
-  const save = () => {
-    // pass
+  const status = () => {
+    $.ajax({
+      method: "POST",
+      url: `/api/write/${post.id}/status`,
+      data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken, id: post.id },
+      success: (r) => {
+        if (r.result) {
+          setSaved(true);
+          setPost({ ...post, ["isPub"]: r.isPub });
+          showMsg(`Successfully ${r.isPub ? "Published" : "Drafted"}`);
+        } else {
+          showMsg("An unexpected error occurred");
+        }
+      },
+      error: () => {
+        showMsg("An unknown nerwoek error has occurred");
+      },
+    });
   };
+
+  const avTags = () => {
+    const av = (
+      srchTag.replace(/\W+/g, "").length || crntTags.items.length
+        ? crntTags
+        : topTags
+    ).items.filter(
+      (i) =>
+        !(post.tags || []).includes(i) &&
+        i.name.toLowerCase().startsWith(srchTag.toLowerCase())
+    );
+    return av.length ? av : false;
+  };
+  const save = () => {
+    if (post.title && post.text) {
+      let payload = { ...post, ["slug"]: post.title.replace(/\s+/g, "-") };
+      payload["tags"] = "";
+      post.tags.map((i) => {
+        payload["tags"] += ` . ${i.id}`;
+      });
+
+      $.ajax({
+        method: "POST",
+        url: apiPath,
+        data: payload,
+        success: (r) => {
+          setMessages(r);
+
+          if (r.result) {
+            if (r.tags) {
+              showMsg(r.tags);
+            }
+            setSaved(true);
+            setApiPath(`/api/write/${r.id || post.id}`);
+            setPost({ ...post, ["id"]: r.id });
+            showMsg("Successfully saved");
+          } else {
+            setMessages(r);
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+        },
+      });
+    } else {
+      showMsg("Fill all fields");
+    }
+  };
+
+  const searchTag = (e = { target: {} }, append = false) => {
+    const text = e.target.value || srchTag;
+    $.ajax({
+      method: "POST",
+      url: "/api/search-tags",
+      data: {
+        csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+        text: text,
+        page: crntTags.items.length / 15 + 1,
+      },
+      success: (r) => {
+        if (r.result) {
+          if (append) {
+            r["items"] = crntTags.items.concat(r.items);
+          }
+          setCrntTags({ ...r, ["isReady"]: true });
+        }
+      },
+      error: () => {
+        showMsg("An unknown nerwoek error has occurred");
+      },
+    });
+  };
+  useEffect(() => {
+    const lastChild = document.querySelector(
+      ".topTagsContainer > *:last-child"
+    );
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          if (srchTag.replace(/\W+/g, "").length && crntTags.hasNext) {
+            searchTag({ target: {} }, true);
+          } else {
+            if (topTags.hasNext) {
+              getTopTags();
+            }
+          }
+        }
+      });
+    });
+    if (lastChild) {
+      observer.observe(lastChild);
+    }
+  }, [srchTag]);
 
   return (
     <main>
       <main className="mt-16 mb-16 sm:m-0 sm:ml-16 flex items-center justify-center">
         <section className="p-6 max-w-6xl w-full">
           <div className="flex items-center justify-between mb-5">
-            <button className="relative px-4 py-1 border-2 border-gray-300 rounded-full cursor-pointer active:scale-[0.98] active:opacity-90 transition-all">
+            <button
+              onClick={handleUpload}
+              className="relative px-4 py-1 border-2 border-gray-300 rounded-full cursor-pointer active:scale-[0.98] active:opacity-90 transition-all focus-visible:scale-110 focus-visible:border-gray-700"
+            >
               Upload
-              <input
+              {/* <input
                 type="file"
                 accept="image/*"
                 onClick={handleUpload}
-                className="cursor-pointer w-full h-full opacity-0 absolute right-0 bottom-0 z-[2]"
-              />
+                className="cursor-pointer w-full h-full opacity-0 absolute right-0 bottom-0"
+              /> */}
             </button>
             <div className="flex">
               <button
-                onClick={save}
-                className="hidden sm:block px-4 py-1 bg-gray-900 text-white rounded-full mr-2 cursor-pointer active:scale-[0.98] active:opacity-90 transition-all"
+                onClick={saved ? status : save}
+                className="z-10 top-3 right-3 fixed sm:relative sm:top-0 sm:right-0 px-8 py-2 sm:translate-x-0 sm:translate-y-0 sm:px-4 sm:py-1 bg-gray-900 text-white rounded-full mr-2 cursor-pointer active:scale-[0.98] active:opacity-90 transition-all focus-visible:scale-110 "
               >
-                Save
+                {saved ? (post.isPub ? "Draft" : "Publish") : "Save"}
               </button>
               <button
                 onClick={() => setIsPreview(!isPreview)}
-                className="px-4 py-1 border-2 border-gray-300 rounded-full cursor-pointer active:scale-[0.98] active:opacity-90 transition-all"
+                className="px-4 py-1 border-2 border-gray-300 rounded-full cursor-pointer active:scale-[0.98] active:opacity-90 transition-all focus-visible:scale-110 focus-visible:border-gray-700"
               >
                 {isPreview ? "Edit" : "Preview"}
               </button>
@@ -1202,7 +1986,10 @@ const WriteView = ({}) => {
                       </span>
                       <span className="text-gray-500 mx-1">•</span>
                       <span className="text-gray-500 whitespace-pre">
-                        {Math.ceil((post.text || "").split(" ").length / 200)}{" "}
+                        {Math.ceil(
+                          (cleanMd(post.text || "") || "").split(" ").length /
+                            200
+                        )}{" "}
                         min <span className="hidden sm:inline">read</span>
                       </span>
                     </div>
@@ -1217,11 +2004,14 @@ const WriteView = ({}) => {
               </div>
 
               <article
+                dir="auto"
                 className="post-body mt-2"
                 dangerouslySetInnerHTML={{
                   __html: DOMPurify.sanitize(
                     marked.parse(
-                      `# ${post.title || "Title"}\n` +
+                      `# ` +
+                        (post.title || "Title") +
+                        `\n` +
                         (post.text || "Post body")
                     )
                   ),
@@ -1240,13 +2030,99 @@ const WriteView = ({}) => {
               />
               <span
                 className={`${
-                  messages.text ? "text-red-500" : "text-gray-700"
+                  messages.title || messages.slug
+                    ? "text-red-500"
+                    : "text-gray-700"
                 } text-sm`}
               >
                 {messages.title ||
+                  messages.slug ||
                   "Show on top of post and other people can find your post with it."}
               </span>
-
+              <div className="flex flex-col sm:flex-row">
+                <div className="">
+                  {post.tags &&
+                    post.tags.map((i) => (
+                      <span className="p-1 border-b-[1px] border-gray-300 mr-2">
+                        <h1 className={`text-${genColor(i.id)}`}>
+                          #<span className="ml-1 text-gray-700">{i.name}</span>
+                        </h1>
+                        <i
+                          className="bi bi-x p-1 cursor-pointer"
+                          onClick={() => {
+                            setPost({
+                              ...post,
+                              ["tags"]: (post.tags || []).filter(
+                                (pt) => pt.id != i.id
+                              ),
+                            });
+                          }}
+                        />
+                      </span>
+                    ))}
+                </div>
+                <div className="relative group mt-2 sm:mt-0">
+                  {!post.tags || post.tags.length < 3 ? (
+                    <input
+                      autocomplete="none"
+                      type="text"
+                      id="tagInput"
+                      className="w-full"
+                      placeholder="Add tags"
+                      onChange={(e) => {
+                        searchTag(e);
+                        setSrchTag(e.target.value);
+                      }}
+                      defaultValue={srchTag}
+                    />
+                  ) : (
+                    ""
+                  )}
+                  <ul className="topTagsContainer rounded-xl absolute top-[2rem] left-0 bg-gray-100 shadow-xl h-64 overflow-auto opacity-0 pointer-events-none group-focus-within:opacity-100 group-focus-within:pointer-events-auto w-64">
+                    {(
+                      avTags() ||
+                      (!srchTag.includes(" ")
+                        ? [{ id: srchTag, name: srchTag }]
+                        : [])
+                    ).map((i) => (
+                      <li>
+                        <button
+                          onClick={() => {
+                            setPost({
+                              ...post,
+                              ["tags"]: (post.tags || []).concat(i),
+                            });
+                            $("#tagInput").val("");
+                            setSaved(false);
+                          }}
+                          className="w-full flex  hover:bg-gray-200 px-3 focus-visible:bg-gray-200  py-2"
+                        >
+                          <div className="flex items-center w-full">
+                            <span
+                              className={`text-${genColor(
+                                i.id
+                              )} text-5xl mr-2 `}
+                            >
+                              #
+                            </span>
+                            <div className="flex flex-col items-start">
+                              <h1
+                                name={`# ${i.name}`}
+                                className="text-md truncate contents"
+                              >
+                                {i.name}
+                              </h1>
+                              <span className="text-sm text-gray-500 ">
+                                {nFormatter(i.fallowers || 0)} Fallowers
+                              </span>
+                            </div>
+                          </div>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
               <textarea
                 dir="auto"
                 defaultValue={post.text}
@@ -1266,7 +2142,7 @@ const WriteView = ({}) => {
                     <a
                       href="#markdown"
                       target="_blank"
-                      className="text-indigo-800 mx-1"
+                      className="text-indigo-500 mx-1 contents"
                     >
                       markdown
                     </a>
@@ -1286,48 +2162,193 @@ const MeView = ({}) => {
   const [data, setData] = useContext(Context);
   const [state, setState] = useState("drafts");
   const [showSide, setShowSide] = useState(null);
-  const [isReady, setIsReady] = useState(false);
+  const [posts, setPosts] = useState({ items: [], hasNext: true });
+  const [dposts, setDposts] = useState({ items: [], hasNext: true });
+  const [fallowers, setFallowers] = useState({ items: [], hasNext: true });
+  const [fallowings, setFallowings] = useState({ items: [], hasNext: true });
+  const [tags, setTags] = useState({ items: [], hasNext: true });
+
+  const getPosts = () => {
+    if (posts.hasNext) {
+      $.ajax({
+        method: "POST",
+        url: "/api/me/posts",
+        data: {
+          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+          page: posts.items.length / 15 + 1,
+        },
+        success: (r) => {
+          if (r.result) {
+            r["items"] = posts.items.concat(r.items);
+            r["isReady"] = true;
+            setPosts(r);
+          } else {
+            showMsg("An unexpected error occurred");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+          setTimeout(getPosts, 10000);
+        },
+      });
+    }
+  };
+
+  const getDposts = () => {
+    if (dposts.hasNext) {
+      $.ajax({
+        method: "POST",
+        url: "/api/me/dposts",
+        data: {
+          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+          page: dposts.items.length / 15 + 1,
+        },
+        success: (r) => {
+          if (r.result) {
+            r["items"] = dposts.items.concat(r.items);
+            r["isReady"] = true;
+            setDposts(r);
+          } else {
+            showMsg("An unexpected error occurred");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+          setTimeout(getDposts, 10000);
+        },
+      });
+    }
+  };
+  const getFallowers = () => {
+    if (fallowers.hasNext) {
+      $.ajax({
+        method: "POST",
+        url: "/api/me/fallowers",
+        data: {
+          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+          page: fallowers.items.length / 15,
+        },
+        success: (r) => {
+          if (r.result) {
+            r["items"] = fallowers.items.concat(r.items);
+            r["isReady"] = true;
+            setFallowers(r);
+          } else {
+            showMsg("An unexpected error occurred");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+          setTimeout(getFallowers, 10000);
+        },
+      });
+    }
+  };
+
+  const getFallowings = () => {
+    if (fallowings.hasNext) {
+      $.ajax({
+        method: "POST",
+        url: "/api/me/fallowings",
+        data: {
+          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+          page: fallowings.items.length / 15 + 1,
+        },
+        success: (r) => {
+          if (r.result) {
+            r["items"] = fallowings.items.concat(r.items);
+            r["isReady"] = true;
+            setFallowings(r);
+          } else {
+            showMsg("An unexpected error occurred");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+          setTimeout(getFallowings, 10000);
+        },
+      });
+    }
+  };
+  const getTags = () => {
+    if (tags.hasNext) {
+      $.ajax({
+        method: "POST",
+        url: "/api/me/tags",
+        data: {
+          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+          page: tags.items.length / 15 + 1,
+        },
+        success: (r) => {
+          if (r.result) {
+            r["items"] = tags.items.concat(r.items);
+            r["isReady"] = true;
+            setTags(r);
+          } else {
+            showMsg("An unexpected error occurred");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+          setTimeout(getTags, 10000);
+        },
+      });
+    }
+  };
 
   useEffect(() => {
-    // emulate give from server
-    setTimeout(() => {
-      setIsReady(true);
-      setData({...data,["me"]: tempuser});
-    }, 1000);
+    getMyInfo([data, setData]);
+    getDposts();
   }, [1]);
 
   const closeSide = (e) => {
     if (e.target.id == "close") {
       setShowSide(null);
+      setFallowings({ items: [], hasNext: true });
+      setFallowers({ items: [], hasNext: true });
+      setTags({ items: [], hasNext: true });
     }
   };
 
   const Container = ({ sideName }) => {
-    const [isReady, setIsReady] = useState(false);
-    const [items, setItems] = useState([]);
+    useEffect(() => {
+      if (sideName == "tags") {
+        getTags();
+      } else if (sideName == "fallowings") {
+        getFallowings();
+      } else if (sideName == "fallowers") {
+        getFallowers();
+      }
+    }, [1]);
 
     useEffect(() => {
-      // emulate give from server
-      setTimeout(() => {
-        if (sideName == "fallowers") {
-          // get from server
-          setItems([tempminiuser]);
-        } else if (sideName == "fallowings") {
-          // get from server
-          setItems([tempminiuser]);
-        } else {
-          // get from server
-          setItems(temptags);
-        }
-        setIsReady(true);
-      }, 1000);
-    }, [1]);
+      const lastChild = document.querySelector(
+        ".postsContainer > *:last-child"
+      );
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            if (sideName == "fallowings") {
+              getFallowings();
+            } else if (sideName == "fallowers") {
+              getFallowers();
+            } else if (sideName == "tags") {
+              getTags();
+            }
+          }
+        });
+      });
+      if (lastChild) {
+        observer.observe(lastChild);
+      }
+    }, [fallowers, fallowings, tags]);
 
     return (
       <div
         id="close"
         onClick={closeSide}
-        className={`bg-[#00000078] backdrop-blur-sm fixed w-screen h-screen right-0 top-0 flex flex-col-reverse sm:flex-row-reverse z-[90] `}
+        className={`bg-[#00000078] backdrop-blur-sm fixed w-screen h-screen right-0 top-0 flex flex-col-reverse sm:flex-row-reverse z-20 `}
       >
         <div
           className={`${
@@ -1343,142 +2364,197 @@ const MeView = ({}) => {
             <div className="rounded-full bg-gray-200 w-20 h-1 sm:h-20 sm:w-1"></div>
           </button>
 
-          <div className="overflow-auto h-full sm:ml-4 px-2 pb-2">
-            {isReady
-              ? sideName == "tags"
-                ? items.map((item) => <TagItem tag={item} id={item.id} />)
-                : items.map((item) => <PeopleItem user={item} id={item.id} />)
+          <div className="overflow-auto h-full sm:ml-4 px-2 pb-2 itemsContainer">
+            {sideName == "tags" && tags.isReady
+              ? tags.items.map((item) => <TagItem tag={item} id={item.id} />)
               : sideName == "tags"
               ? [1, 2, 3, 4, 5, , 6, 7, 8, 9].map((item) => (
                   <TagItem loading={true} id={item.id} />
                 ))
-              : [1, 2, 3, 4, 5, , 6, 7, 8, 9].map((item) => (
+              : ""}
+
+            {sideName == "fallowers" && fallowers.isReady
+              ? fallowers.items.map((item) => (
+                  <PeopleItem user={item} id={item.id} />
+                ))
+              : sideName == "fallowers"
+              ? [1, 2, 3, 4, 5, , 6, 7, 8, 9].map((item) => (
                   <PeopleItem loading={true} id={item.id} />
-                ))}
+                ))
+              : ""}
+
+            {sideName == "fallowings" && fallowings.isReady
+              ? fallowings.items.map((item) => (
+                  <PeopleItem user={item} id={item.id} />
+                ))
+              : sideName == "fallowings"
+              ? [1, 2, 3, 4, 5, , 6, 7, 8, 9].map((item) => (
+                  <PeopleItem loading={true} id={item.id} />
+                ))
+              : ""}
+
+            {(sideName == "fallowings" &&
+              fallowings.isReady &&
+              fallowings.hasNext) ||
+            (sideName == "fallowers" &&
+              fallowers.isReady &&
+              fallowers.hasNext) ||
+            (sideName == "tags" && tags.isReady && tags.hasNext) ? (
+              <Loading />
+            ) : (
+              ""
+            )}
           </div>
         </div>
       </div>
     );
   };
 
+  useEffect(() => {
+    const lastChild = document.querySelector(".postsContainer > *:last-child");
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          if (state == "pubs") {
+            getPosts();
+          } else {
+            getDposts();
+          }
+        }
+      });
+    });
+    if (lastChild) {
+      observer.observe(lastChild);
+    }
+  }, [posts, dposts]);
   return (
     <main>
       <main className="mt-16 mb-16 sm:m-0 sm:ml-16 sm:flex items-center justify-center">
-        {isReady ? (
-          <section className="p-6 max-w-6xl w-full">
-            <div className="flex justify-between items-center">
-              <img
-                src={data.me.profile}
-                alt={`${data.me.name}'s image`}
-                className="w-24 h-24 sm:h-36 sm:w-36 lg:h-46 lg:w-46 rounded-full"
-              />
+        <section className="p-6 max-w-6xl w-full">
+          {data.me.id ? (
+            <div>
+              <div className="flex justify-between items-center">
+                <img
+                  src={data.me.profile}
+                  alt={`${data.me.name}'s image`}
+                  className="w-24 h-24 sm:h-36 sm:w-36 lg:h-46 lg:w-46 rounded-full"
+                />
 
-              <div className="flex w-full justify-around">
-                <button
-                  onClick={() => setShowSide("fallowers")}
-                  className="flex flex-col sm:flex-row items-center"
-                >
-                  {nFormatter(data.me.fallowers)}
-                  <span className="text-gray-500 sm:ml-2">Fallowers</span>
-                </button>
-                {showSide == "fallowers" ? (
-                  <Container sideName="fallowers" />
-                ) : (
-                  ""
-                )}
-                <button
-                  onClick={() => setShowSide("fallowings")}
-                  className="flex flex-col sm:flex-row items-center"
-                >
-                  {nFormatter(data.me.fallowings)}
-                  <span className="text-gray-500 sm:ml-2">Fallowings</span>
-                </button>
-                {showSide == "fallowings" ? (
-                  <Container sideName="fallowings" />
-                ) : (
-                  ""
-                )}
-                <button
-                  onClick={() => setShowSide("tags")}
-                  className="flex flex-col sm:flex-row items-center"
-                >
-                  {nFormatter(data.me.tags)}
-                  <span className="text-gray-500 sm:ml-2">Tags</span>
-                </button>
-                {showSide == "tags" ? <Container sideName="tags" /> : ""}
+                <div className="flex w-full justify-around">
+                  <button
+                    onClick={() => {
+                      setShowSide("fallowers");
+                    }}
+                    className="flex flex-col sm:flex-row items-center focus-visible:scale-110  "
+                  >
+                    {nFormatter(data.me.fallowers)}
+                    <span className="text-gray-500 sm:ml-2">Fallowers</span>
+                  </button>
+                  {showSide == "fallowers" ? (
+                    <Container sideName="fallowers" />
+                  ) : (
+                    ""
+                  )}
+                  <button
+                    onClick={() => {
+                      setShowSide("fallowings");
+                    }}
+                    className="flex flex-col sm:flex-row items-center focus-visible:scale-110  "
+                  >
+                    {nFormatter(data.me.fallowings)}
+                    <span className="text-gray-500 sm:ml-2">Fallowings</span>
+                  </button>
+                  {showSide == "fallowings" ? (
+                    <Container sideName="fallowings" />
+                  ) : (
+                    ""
+                  )}
+                  <button
+                    onClick={() => {
+                      setShowSide("tags");
+                    }}
+                    className="flex flex-col sm:flex-row items-center focus-visible:scale-110  "
+                  >
+                    {nFormatter(data.me.tags)}
+                    <span className="text-gray-500 sm:ml-2">Tags</span>
+                  </button>
+                  {showSide == "tags" ? <Container sideName="tags" /> : ""}
+                </div>
               </div>
+              <h1 className="py-1 text-2xl">{data.me.name}</h1>
+              <p className=" text-gray-700">{data.me.bio}</p>
             </div>
-            <h1 className="py-1 text-2xl">{data.me.name}</h1>
-            <p className=" text-gray-700">{data.me.bio}</p>
+          ) : (
+            <div>
+              <div className="flex justify-between items-center">
+                <div className="w-28 h-28 sm:h-36 sm:w-36 lg:h-46 lg:w-46  rounded-full bg-gray-200 fadeInLoad overflow-hidden relative" />
 
-            <div className="mt-8 border-b-2 text-sm sm:text-base flex justify-between sm:block">
-              <button
-                onClick={() => setState("drafts")}
-                className={`transition-all py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto ${
-                  state == "drafts" ? "border-gray-900" : "opacity-[0.75]"
-                }`}
-              >
-                Drafts {data.me.posts.filter((p) => p.status == "draft").length}
-              </button>
-              <button
-                onClick={() => setState("pubs")}
-                className={`transition-all py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto ${
-                  state == "pubs" ? "border-gray-900" : "opacity-[0.75]"
-                }`}
-              >
-                Publications{" "}
-                {data.me.posts.filter((p) => p.status == "pub").length}
-              </button>
-            </div>
-            <div className="posts">
-              {state == "pubs" &&
-                data.me.posts
-                  .filter((i) => i.status == "pub")
-                  .map((i) => <Post post={i} id={i.id} />)}
-              {state == "drafts" &&
-                data.me.posts
-                  .filter((i) => i.status == "draft")
-                  .map((i) => <Post post={i} id={i.id} />)}
-            </div>
-          </section>
-        ) : (
-          <section className="p-6 max-w-6xl w-full">
-            <div className="flex justify-between items-center">
-              <div className="w-28 h-28 sm:h-36 sm:w-36 lg:h-46 lg:w-46  rounded-full bg-gray-200 fadeInLoad overflow-hidden relative" />
+                <div className="flex w-[60%] justify-around">
+                  <button className="flex flex-col sm:flex-row items-center">
+                    <span className="text-gray-500 sm:ml-2">Fallowers</span>
+                  </button>
 
-              <div className="flex w-[60%] justify-around">
-                <button className="flex flex-col sm:flex-row items-center">
-                  <span className="text-gray-500 sm:ml-2">Fallowers</span>
-                </button>
+                  <button className="flex flex-col sm:flex-row items-center">
+                    <span className="text-gray-500 sm:ml-2">Fallowings</span>
+                  </button>
 
-                <button className="flex flex-col sm:flex-row items-center">
-                  <span className="text-gray-500 sm:ml-2">Fallowings</span>
-                </button>
-
-                <button className="flex flex-col sm:flex-row items-center">
-                  <span className="text-gray-500 sm:ml-2">Tags</span>
-                </button>
+                  <button className="flex flex-col sm:flex-row items-center">
+                    <span className="text-gray-500 sm:ml-2">Tags</span>
+                  </button>
+                </div>
               </div>
+              <div className="mt-3 my-1 h-5 w-1/4 rounded-full bg-gray-200 fadeInLoad overflow-hidden relative" />
+              <div className="mt-2 my-1 h-3 w-9/12 rounded-full bg-gray-200 fadeInLoad overflow-hidden relative" />
+              <div className="my-1 h-3 w-1/2 rounded-full bg-gray-200 fadeInLoad overflow-hidden relative" />
             </div>
-            <div className="mt-3 my-1 h-5 w-1/4 rounded-full bg-gray-200 fadeInLoad overflow-hidden relative" />
-            <div className="mt-2 my-1 h-3 w-9/12 rounded-full bg-gray-200 fadeInLoad overflow-hidden relative" />
-            <div className="my-1 h-3 w-1/2 rounded-full bg-gray-200 fadeInLoad overflow-hidden relative" />
+          )}
 
-            <div className="mt-8 border-b-2  flex justify-between sm:block">
-              <button className="py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto">
-                <div className="fadeInLoad relative rounded-full h-5 w-20 bg-gray-200" />
-              </button>
-              <button className="py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto">
-                <div className="fadeInLoad relative rounded-full h-5 w-20 bg-gray-200" />
-              </button>
-            </div>
-            <div className="posts">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Post loading={true} id={i} />
-              ))}
-            </div>
-          </section>
-        )}
+          <div className="mt-8 border-b-2 text-sm sm:text-base flex justify-between sm:block">
+            <button
+              onClick={() => {
+                if (dposts.items.length == 0) {
+                  getDposts();
+                }
+                setState("drafts");
+              }}
+              className={`transition-all py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto focus-visible:scale-110  focus-visible:opacity-100 ${
+                state == "drafts" ? "border-gray-900" : "opacity-[0.75]"
+              }`}
+            >
+              Drafts
+            </button>
+            <button
+              onClick={() => {
+                if (posts.items.length == 0) {
+                  getPosts();
+                }
+                setState("pubs");
+              }}
+              className={`transition-all py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto focus-visible:scale-110  focus-visible:opacity-100 ${
+                state == "pubs" ? "border-gray-900" : "opacity-[0.75]"
+              }`}
+            >
+              Publications
+            </button>
+          </div>
+          <div className="postsContainer">
+            {state == "pubs" &&
+              posts.items.map((i) => <Post post={i} id={i.id} />)}
+            {state == "drafts" &&
+              dposts.items.map((i) => <Post post={i} id={i.id} />)}
+            {(state == "drafts" && !dposts.isReady) ||
+            (state == "pubs" && !posts.isReady)
+              ? [1, 2, 3, 4, 5].map((i) => <Post loading={true} id={i} />)
+              : ""}
+            {(state == "drafts" && !dposts.isReady && dposts.hasNext) ||
+            (state == "pubs" && !posts.isReady && posts.hasNext) ? (
+              <Loading />
+            ) : (
+              ""
+            )}
+          </div>
+        </section>
       </main>
     </main>
   );
@@ -1487,109 +2563,167 @@ const MeView = ({}) => {
 const PeopleView = ({}) => {
   const [data, setData] = useContext(Context);
   const [user, setUser] = useState({});
-  const [isReady, setIsReady] = useState(false);
+  const [posts, setPosts] = useState({ items: [], hasNext: true });
   const url = useParams();
+
+  const getUser = () => {
+    $.ajax({
+      method: "POST",
+      url: `/api/@${url.username}`,
+      data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken },
+      success: (r) => {
+        if (r.result) {
+          setUser(r.user);
+        } else {
+          showMsg("Server error");
+        }
+      },
+      error: () => {
+        showMsg("An unknown nerwoek error has occurred");
+        setTimeout(getUser, 10000);
+      },
+    });
+  };
+
+  const getPosts = () => {
+    if (posts.hasNext) {
+      $.ajax({
+        method: "POST",
+        url: `/api/posts/@${url.username}`,
+        data: {
+          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+          page: posts.items.length / 15 + 1,
+        },
+        success: (r) => {
+          if (r.result) {
+            r["items"] = posts.items.concat(r.items);
+            r["isReady"] = true;
+            setPosts(r);
+          } else {
+            showMsg("Server error");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+          setTimeout(getPosts, 10000);
+        },
+      });
+    }
+  };
   useEffect(() => {
-    // emulate give from server
-    setData({...data,["me"]: tempuser});
-    setTimeout(() => {
-      setUser(tempminiuser);
-      setIsReady(true);
-    }, 1000);
+    const lastChild = document.querySelector(".postsContainer > *:last-child");
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          getPosts();
+        }
+      });
+    });
+    if (lastChild) {
+      observer.observe(lastChild);
+    }
+  }, [posts]);
+
+  useEffect(() => {
+    getMyInfo([data, setData]);
+    getUser();
+    getPosts();
   }, [1]);
 
   const fallow = () => {
-    data.setAlert(
-      () => {
-        // send to server
-        setUser({ ...user, ["fallowed"]: !user.fallowed });
-      },
-      data.me.id,
-      "You are not logged in."
-    );
+    if (data.me.id) {
+      $.ajax({
+        method: "POST",
+        url: `/api/fallow/@${user.username}`,
+        data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken, id: user.id },
+        success: (r) => {
+          if (r.result) {
+            setUser({ ...user, ["fallowed"]: !user.fallowed });
+          } else {
+            showMsg("Server error");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+        },
+      });
+    } else {
+      showMsg("Please login");
+    }
   };
 
   return (
     <main>
-      {isReady ? (
-        <main className="mt-16 mb-16 sm:m-0 sm:ml-16 flex items-center justify-center">
-          <section className="p-6 max-w-6xl w-full">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center">
-                <img
-                  src={user.profile}
-                  alt={`${user.name}'s image`}
-                  className="h-14 w-14 sm:h-16 sm:w-16 rounded-full"
-                />
-                <div className=" ml-2 w-full overflow-hidden">
-                  <h1 className="text-xl sm:text-2xl truncate">
-                    {user.name}
-                    <small className="text-gray-500 hidden sm:inline mx-1">
-                      @{user.username}
-                    </small>
-                  </h1>
-                  <span className="text-gray-500 whitespace-pre">
-                    {nFormatter(user.fallowers)} Fallowers
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={fallow}
-                className={`py-1 px-3 mx-2 rounded-full active:scale-[0.98] transition-all border-2 border-indigo-500 ${
-                  user.fallowed
-                    ? "text-indigo-500  bg-white"
-                    : "text-white bg-indigo-500"
-                } `}
-              >
-                {user.fallowed ? "Unfallow" : "Fallow"}
-              </button>
-            </div>
-            <p className="my-4">{user.bio}</p>
-            <div className="mt-8 border-b-2 border-gray-400 flex ">
-              <button className="py-2 px-3 border-b-2 border-gray-900 translate-y-[2px] opacity-90 ">
-                Home
-              </button>
-            </div>
-            <div className="posts">
-              {user.posts.map((p) => (
-                <Post post={p} id={p.id} />
-              ))}
-            </div>
-          </section>
-        </main>
-      ) : (
-        <main className="mt-16 mb-16 sm:m-0 sm:ml-16 flex items-center justify-center">
-          <section className="p-6 max-w-6xl w-full">
-            <div className="flex justify-between items-center fadeInLoad overflow-hidden relative ">
-              <div className="flex items-center w-full">
-                <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-gray-200" />
-                <div className=" ml-2 w-4/5 overflow-hidden">
-                  <div className="flex items-center">
-                    <div className="h-5 bg-gray-200 rounded-full w-32" />
-                    <div className="ml-1 h-4 bg-gray-200 rounded-full w-16" />
+      <main className="mt-16 mb-16 sm:m-0 sm:ml-16 flex items-center justify-center">
+        <section className="p-6 max-w-6xl w-full">
+          {user.id ? (
+            <div>
+              <div className="flex justify-between items-center">
+                <div className="flex items-center">
+                  <img
+                    src={user.profile}
+                    alt={`${user.name}'s image`}
+                    className="h-14 w-14 sm:h-16 sm:w-16 rounded-full"
+                  />
+                  <div className=" ml-2 overflow-hidden">
+                    <h1 className="text-xl sm:text-2xl truncate">
+                      {user.name}
+                      <small className="text-gray-500 hidden sm:inline mx-1">
+                        @{user.username}
+                      </small>
+                    </h1>
+                    <span className="text-gray-500 whitespace-pre">
+                      {nFormatter(user.fallowers)} Fallowers
+                    </span>
                   </div>
-                  <div className="mt-1 h-4 bg-gray-200 rounded-full w-16" />
                 </div>
+                <button
+                  onClick={fallow}
+                  className={`py-1 px-3 mx-2 rounded-full active:scale-[0.98] transition-all border-2 border-indigo-500 focus-visible:scale-110 ${
+                    user.fallowed
+                      ? "text-indigo-500  bg-white"
+                      : "text-white bg-indigo-500"
+                  } `}
+                >
+                  {user.fallowed ? "Unfallow" : "Fallow"}
+                </button>
               </div>
-              <div className="py-1 px-3 rounded-full bg-gray-200 relative fadeInLoad overflow-hidden  w-20 h-8" />
+              <p className="my-4 text-gray-700">{user.bio}</p>
             </div>
+          ) : (
+            <div>
+              <div className="flex justify-between items-center fadeInLoad overflow-hidden relative ">
+                <div className="flex items-center w-full">
+                  <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-gray-200" />
+                  <div className=" ml-2 w-4/5 overflow-hidden">
+                    <div className="flex items-center">
+                      <div className="h-5 bg-gray-200 rounded-full w-32" />
+                      <div className="ml-1 h-4 bg-gray-200 rounded-full w-16" />
+                    </div>
+                    <div className="mt-1 h-4 bg-gray-200 rounded-full w-16" />
+                  </div>
+                </div>
+                <div className="py-1 px-3 rounded-full bg-gray-200 relative fadeInLoad overflow-hidden  w-20 h-8" />
+              </div>
 
-            <div className="mt-2 my-1 h-3 w-9/12 rounded-full bg-gray-200 fadeInLoad overflow-hidden relative" />
-            <div className="my-1 h-3 w-1/2 rounded-full bg-gray-200 fadeInLoad overflow-hidden relative" />
-
-            <div className="mt-8 border-b-2 flex ">
-              <button className="py-2 px-3 translate-y-[2px] border-b-2">
-                <div className="fadeInLoad relative rounded-full h-5 w-20 bg-gray-200" />
-              </button>
+              <div className="mt-2 my-1 h-3 w-9/12 rounded-full bg-gray-200 fadeInLoad overflow-hidden relative" />
+              <div className="my-1 h-3 w-1/2 rounded-full bg-gray-200 fadeInLoad overflow-hidden relative" />
             </div>
-            <div className="posts">
-              {[1, 2, 3, 4, 5].map(() => (
-                <Post loading={true} />
-              ))}
-            </div>
-          </section>
-        </main>
-      )}
+          )}
+          <div className="mt-8 border-b-2 border-gray-400 flex ">
+            <button className="py-2 px-3 border-b-2 border-gray-900 translate-y-[2px] opacity-90 ">
+              Home
+            </button>
+          </div>
+          <div className="postsContainer">
+            {posts.isReady
+              ? posts.items.map((i) => <Post post={i} id={i.id} />)
+              : [1, 2, 3, 4, 5].map((i) => <Post loading={true} id={i} />)}
+            {posts.hasNext && posts.isReady ? <Loading /> : ""}
+          </div>
+        </section>
+      </main>
     </main>
   );
 };
@@ -1601,17 +2735,32 @@ const SettingsView = ({}) => {
   const [formData, setFormData] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [showSide, setShowSide] = useState(null);
-  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // emulate give from server
-    setTimeout(() => {
-      setIsReady(true);
-      setData({...data,["me"]: tempuser});
-    }, 1000);
+    getMyInfo([data, setData]);
   }, [1]);
 
   const Container = ({ sideName, title, about, btn, func }) => {
+    const [pass, setPass] = useState("");
+
+    const deleteAccount = () => {
+      $.ajax({
+        method: "POST",
+        url: "/api/accounts/delete",
+        data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken, password: pass },
+        success: (r) => {
+          if (r.result) {
+            document.location = "/";
+          } else {
+            setMessages(r);
+          }
+        },
+        error: () => {
+          setShowSide(null);
+          showMsg("An unknown nerwoek error has occurred");
+        },
+      });
+    };
     return (
       <div
         id="close"
@@ -1620,7 +2769,7 @@ const SettingsView = ({}) => {
           showSide == sideName
             ? "bg-[#00000078]"
             : "pointer-events-none opacity-0"
-        } fixed flex h-screen items-center justify-center right-0 top-0 w-screen z-10 transition-all backdrop-blur-sm`}
+        } fixed flex h-screen items-center justify-center right-0 top-0 w-screen z-20 transition-all backdrop-blur-sm`}
       >
         <div
           className={`bg-white rounded-xl w-2/3 max-w-lg transition-all ${
@@ -1637,7 +2786,7 @@ const SettingsView = ({}) => {
                 type="password"
                 name="password"
                 placeholder="Current password"
-                // onChange={manageData}
+                onChange={(e) => setPass(e.target.value)}
                 required={true}
               />
               <span
@@ -1654,7 +2803,7 @@ const SettingsView = ({}) => {
 
           <div className="flex flex-col">
             <button
-              onClick={func}
+              onClick={showSide == "delete" ? deleteAccount : func}
               className="border-t-2 border-t-gray-100 p-3 text-red-500"
             >
               {btn}
@@ -1674,13 +2823,32 @@ const SettingsView = ({}) => {
 
   const manageForm = (e) => {
     if (e.target.name == "profile") {
+      showMsg("Processing...");
       const [file] = e.target.files;
-      e.target.nextElementSibling.setAttribute(
-        "src",
-        URL.createObjectURL(file)
-      );
-      setFormData({ ...formData, [e.target.name]: file });
-      // then send to server
+      setIsLoading(true);
+      const pyload = new FormData();
+      pyload.append("profile", file);
+      pyload.append("csrfmiddlewaretoken", data.csrfmiddlewaretoken);
+      $.ajax({
+        method: "POST",
+        url: "/api/me/edit",
+        data: pyload,
+        contentType: false,
+        processData: false,
+        success: (r) => {
+          if (r.result) {
+            setData({ ...data, ["me"]: r.me });
+            setIsLoading(false);
+            setEditField(null);
+            setFormData({});
+          } else {
+            showMsg(r.profile || "Server error");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+        },
+      });
     } else {
       setFormData({ ...formData, [e.target.name]: e.target.value });
     }
@@ -1693,14 +2861,45 @@ const SettingsView = ({}) => {
   };
 
   const killAll = () => {
-    // send to server
+    $.ajax({
+      method: "POST",
+      url: "/api/accounts/kill-other",
+      data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken },
+      success: (r) => {
+        setShowSide(null);
+        if (r.result) {
+          showMsg("Successfully killed");
+        } else {
+          showMsg("Server error");
+        }
+      },
+      error: () => {
+        setShowSide(null);
+        showMsg("An unknown nerwoek error has occurred");
+      },
+    });
   };
+
   const signOut = () => {
-    // send to server
+    $.ajax({
+      method: "POST",
+      url: "/api/accounts/log-out",
+      data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken },
+      success: (r) => {
+        setIsLoading(false);
+        if (r.result) {
+          document.location = "/";
+        } else {
+          setMessages(r);
+        }
+      },
+      error: () => {
+        setShowSide(null);
+        showMsg("An unknown nerwoek error has occurred");
+      },
+    });
   };
-  const deleteAccount = () => {
-    // send to server
-  };
+
   const closeSide = (e) => {
     if (e.target.id == "close") {
       setShowSide(null);
@@ -1710,21 +2909,66 @@ const SettingsView = ({}) => {
     }
   };
 
-  const chagnePassword = (e) => {
+  const changePassword = (e) => {
     e.preventDefault();
     setIsLoading(true);
+    const pyload = formData;
+    pyload["csrfmiddlewaretoken"] = data.csrfmiddlewaretoken;
+    $.ajax({
+      method: "POST",
+      url: "/api/accounts/change-password",
+      data: pyload,
+      success: (r) => {
+        setIsLoading(false);
+        if (r.result) {
+          setData({ ...data, ["csrfmiddlewaretoken"]: r.csrfmiddlewaretoken });
+          setShowSide(null);
+          setFormData({});
+          showMsg("Password successfully changed.");
+        } else {
+          setMessages(r);
+        }
+      },
+      error: () => {
+        setShowSide(null);
+        setFormData({});
+        showMsg("An unknown nerwoek error has occurred");
+      },
+    });
   };
 
   const save = (e) => {
+    e.preventDefault();
     setIsLoading(true);
-    // sent to server
-    // const text = e.target.parentElement.parentElement.offsetParent.children[0].children[1].value;
+    const pyload = formData;
+    pyload["csrfmiddlewaretoken"] = data.csrfmiddlewaretoken;
+    $.ajax({
+      method: "POST",
+      url: "/api/me/edit",
+      data: pyload,
+      success: (r) => {
+        setIsLoading(false);
+        if (r.result) {
+          setData({ ...data, ["me"]: r.me });
+          setEditField(null);
+          setFormData({});
+          showMsg("Successfully changed");
+        }
+        setMessages(r);
+      },
+      error: () => {
+        setIsLoading(false);
+        setEditField(null);
+        setFormData({});
+        showMsg("An unknown nerwoek error has occurred");
+      },
+    });
   };
 
   return (
     <main>
       <main className="mt-16 mb-16 sm:m-0 sm:ml-16 flex items-center justify-center">
-        {isReady ? (
+        {data.me.id ? (
           <section className="p-6 max-w-6xl w-full">
             <h1 className="text-3xl border-b-2 border-gray-300 mb-4 py-2">
               About you
@@ -1747,7 +2991,7 @@ const SettingsView = ({}) => {
                   type="file"
                   name="profile"
                   onChange={manageForm}
-                  className="w-full h-full  z-[1] absolute cursor-pointer opacity-0"
+                  className="w-full h-full absolute cursor-pointer opacity-0 z-[2]"
                   title="Click to change profile image"
                 />
                 <img
@@ -1761,13 +3005,17 @@ const SettingsView = ({}) => {
               </div>
             </div>
 
-            <div className="flex justify-between mb-6 relative">
+            <form
+              onSubmit={save}
+              className="flex justify-between mb-6 relative"
+            >
               <div className="w-3/4">
                 <h2 className="py-1 text-xl">Username</h2>
                 {editField == "username" ? (
                   <input
                     defaultValue={data.me.username}
                     type="text"
+                    name="username"
                     maxLength={30}
                     pattern="^(?!.*\.\.)(?!.*\.$)[^\W][a-z0-9_.]{2,29}$"
                     placeholder="Username"
@@ -1788,15 +3036,16 @@ const SettingsView = ({}) => {
                   {messages.username || "Invalid usernadata.me."}
                 </span>
                 <p className="text-gray-700">
-                  other people can find you with this usernadata.me.
+                  other people can find you with this username.
                 </p>
               </div>
               <div className="absolute right-0">
                 {editField == "username" ? (
                   <div>
                     <button
+                      type="submit"
                       onClick={save}
-                      className={`text-white bg-indigo-500 whitespace-pre py-1 px-5  border-r-0 border-2 border-indigo-500 rounded-br-none rounded-tr-none rounded-full active:scale-[0.98] active:opacity-90 transition-all ${
+                      className={`text-white bg-indigo-500 whitespace-pre py-1 px-5  border-r-0 border-2 border-indigo-500 rounded-br-none rounded-tr-none rounded-full active:scale-[0.98] active:opacity-90 transition-all  ${
                         isLoading && !showSide ? "opacity-75 cursor-wait" : ""
                       }`}
                     >
@@ -1804,8 +3053,9 @@ const SettingsView = ({}) => {
                     </button>
                     <button
                       id="close"
+                      type="reset"
                       onClick={closeSide}
-                      className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-bl-none rounded-tl-none rounded-full active:scale-[0.98] active:opacity-90 transition-all"
+                      className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-bl-none rounded-tl-none rounded-full active:scale-[0.98] active:opacity-90 transition-all hover:border-gray-700 focus-visible:border-gray-700"
                     >
                       Cancel
                     </button>
@@ -1813,25 +3063,29 @@ const SettingsView = ({}) => {
                 ) : (
                   <button
                     onClick={() => setEditField("username")}
-                    className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-full active:scale-[0.98] active:opacity-90 transition-all"
+                    className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-full active:scale-[0.98] active:opacity-90 transition-all hover:border-gray-700 focus-visible:border-gray-700"
                   >
                     Edit
                   </button>
                 )}
               </div>
-            </div>
+            </form>
 
-            <div className="flex justify-between mb-6 relative">
+            <form
+              onSubmit={save}
+              className="flex justify-between mb-6 relative"
+            >
               <div className="w-3/4">
                 <h2 className="py-1 text-xl">Name</h2>
                 {editField == "name" ? (
                   <input
+                    onChange={manageForm}
                     defaultValue={data.me.name}
                     type="text"
                     maxLength={50}
                     placeholder="Your name"
-                    onChange={manageForm}
                     dir="auto"
+                    name="name"
                     className="py-1 border-b-2 border-gray-300 w-full focus:border-gray-500"
                     disabled={!(editField == "name")}
                   />
@@ -1867,7 +3121,7 @@ const SettingsView = ({}) => {
                     <button
                       id="close"
                       onClick={closeSide}
-                      className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-bl-none rounded-tl-none rounded-full active:scale-[0.98] active:opacity-90 transition-all"
+                      className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-bl-none rounded-tl-none rounded-full active:scale-[0.98] active:opacity-90 transition-all hover:border-gray-700 focus-visible:border-gray-700"
                     >
                       Cancel
                     </button>
@@ -1875,25 +3129,29 @@ const SettingsView = ({}) => {
                 ) : (
                   <button
                     onClick={() => setEditField("name")}
-                    className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-full active:scale-[0.98] active:opacity-90 transition-all"
+                    className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-full active:scale-[0.98] active:opacity-90 transition-all hover:border-gray-700 focus-visible:border-gray-700"
                   >
                     Edit
                   </button>
                 )}
               </div>
-            </div>
+            </form>
 
-            <div className="flex justify-between mb-6 relative">
+            <form
+              onSubmit={save}
+              className="flex justify-between mb-6 relative"
+            >
               <div className="w-3/4">
                 <h2 className="py-1 text-xl">Bio</h2>
                 {editField == "bio" ? (
                   <input
+                    onChange={manageForm}
                     dir="auto"
                     defaultValue={data.me.bio}
                     type="text"
+                    name="bio"
                     maxLength={150}
                     placeholder="Add your bio"
-                    onChange={manageForm}
                     className="py-1 border-b-2 border-gray-300 w-full focus:border-gray-500"
                     disabled={!(editField == "bio")}
                   />
@@ -1928,7 +3186,7 @@ const SettingsView = ({}) => {
                     <button
                       id="close"
                       onClick={closeSide}
-                      className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-bl-none rounded-tl-none rounded-full active:scale-[0.98] active:opacity-90 transition-all"
+                      className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-bl-none rounded-tl-none rounded-full active:scale-[0.98] active:opacity-90 transition-all hover:border-gray-700 focus-visible:border-gray-700"
                     >
                       Cancel
                     </button>
@@ -1936,23 +3194,27 @@ const SettingsView = ({}) => {
                 ) : (
                   <button
                     onClick={() => setEditField("bio")}
-                    className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-full active:scale-[0.98] active:opacity-90 transition-all"
+                    className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-full active:scale-[0.98] active:opacity-90 transition-all hover:border-gray-700 focus-visible:border-gray-700"
                   >
                     Edit
                   </button>
                 )}
               </div>
-            </div>
+            </form>
 
-            <div className="flex justify-between mb-6 relative">
+            <form
+              onSubmit={save}
+              className="flex justify-between mb-6 relative"
+            >
               <div className="w-3/4">
                 <h2 className="py-1 text-xl">Email</h2>
                 {editField == "email" ? (
                   <input
+                    onChange={manageForm}
                     defaultValue={data.me.email}
                     type="email"
                     placeholder="email address"
-                    onChange={manageForm}
+                    name="email"
                     className="py-1 border-b-2 border-gray-300 w-full focus:border-gray-500"
                     disabled={!(editField == "email")}
                   />
@@ -1987,7 +3249,7 @@ const SettingsView = ({}) => {
                     <button
                       id="close"
                       onClick={closeSide}
-                      className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-bl-none rounded-tl-none rounded-full active:scale-[0.98] active:opacity-90 transition-all"
+                      className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-bl-none rounded-tl-none rounded-full active:scale-[0.98] active:opacity-90 transition-all hover:border-gray-700 focus-visible:border-gray-700"
                     >
                       Cancel
                     </button>
@@ -1995,13 +3257,13 @@ const SettingsView = ({}) => {
                 ) : (
                   <button
                     onClick={() => setEditField("email")}
-                    className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-full active:scale-[0.98] active:opacity-90 transition-all"
+                    className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-full active:scale-[0.98] active:opacity-90 transition-all hover:border-gray-700 focus-visible:border-gray-700"
                   >
                     Edit
                   </button>
                 )}
               </div>
-            </div>
+            </form>
 
             <h1 className="text-3xl border-b-2 border-gray-300 mb-4 mt-6 py-2">
               Account
@@ -2018,108 +3280,119 @@ const SettingsView = ({}) => {
                 <button
                   onClick={() => {
                     setShowSide("changePassword");
-                    isLoading(false);
+                    setIsLoading(false);
                   }}
-                  className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-full active:scale-[0.98] active:opacity-90 transition-all"
+                  className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-full active:scale-[0.98] active:opacity-90 transition-all hover:border-gray-700 focus-visible:border-gray-700"
                 >
                   Change
                 </button>
               </div>
-              <div
-                id="close"
-                onClick={closeSide}
-                className={`bg-[#00000078] backdrop-blur-sm fixed w-screen h-screen right-0 top-0 flex flex-col-reverse sm:flex-row-reverse z-[90] ${
-                  showSide == "changePassword"
-                    ? ""
-                    : "opacity-0 pointer-events-none"
-                }`}
-              >
+              {showSide == "changePassword" ? (
                 <div
-                  className={`${
+                  id="close"
+                  onClick={closeSide}
+                  className={`bg-[#00000078] backdrop-blur-sm fixed w-screen h-screen right-0 top-0 flex flex-col-reverse sm:flex-row-reverse z-20 ${
                     showSide == "changePassword"
-                      ? "translate-0"
-                      : "translate-y-[100%] sm:translate-x-[100%] sm:translate-y-0"
-                  } overflow-auto transition-all border-2 border-gray-100 flex flex-col z-20 bg-white absolute rounded-tr-3xl rounded-tl-3xl w-full h-4/5 sm:rounded-tr-none sm:rounded-bl-3xl sm:h-full sm:w-[28rem]`}
+                      ? ""
+                      : "opacity-0 pointer-events-none"
+                  }`}
                 >
-                  <button
-                    id="close"
-                    className="p-2 w-full flex items-center justify-center sm:w-auto sm:h-full sm:left-0 sm:absolute"
+                  <div
+                    className={`${
+                      showSide == "changePassword"
+                        ? "translate-0"
+                        : "translate-y-[100%] sm:translate-x-[100%] sm:translate-y-0"
+                    } overflow-auto transition-all border-2 border-gray-100 flex flex-col bg-white absolute rounded-tr-3xl rounded-tl-3xl w-full h-4/5 sm:rounded-tr-none sm:rounded-bl-3xl sm:h-full sm:w-[28rem]`}
                   >
-                    <div className="rounded-full bg-gray-200 w-20 h-1 sm:h-20 sm:w-1"></div>
-                  </button>
-                  <form
-                    onSubmit={chagnePassword}
-                    method="POST"
-                    className="flex flex-col items-center justify-center p-8"
-                  >
-                    <h1 className="text-2xl w-full mb-2">
-                      Change Your Password
-                    </h1>
-                    <div className="w-full my-1 text-lg flex flex-col">
-                      <input
-                        className="border-gray-300 border-b-2 py-1 placeholder:text-gray-600 w-full focus:border-gray-500 focus:placeholder:text-gray-700"
-                        type="password"
-                        name="currentPassword"
-                        placeholder="Current password"
-                        onChange={manageForm}
-                        required={true}
-                      />
-                      <span
-                        className={`text-sm text-red-500 pt-1 ${
-                          messages.currentPassword ? "opacity-100" : "opacity-0"
-                        }`}
-                      >
-                        {messages.currentPassword || "."}
-                      </span>
-                    </div>
-                    <div className="w-full my-1 text-lg flex flex-col">
-                      <input
-                        className="border-gray-300 border-b-2 py-1 placeholder:text-gray-600 w-full focus:border-gray-500 focus:placeholder:text-gray-700"
-                        type="password"
-                        name="password1"
-                        placeholder="New password"
-                        onChange={manageForm}
-                        pattern=".{8,}"
-                        required={true}
-                      />
-                      <span className="text-sm text-red-500 pt-1 opacity-0">
-                        Password is too short.
-                      </span>
-                    </div>
-                    <div className="w-full my-1 text-lg flex flex-col">
-                      <input
-                        className="border-gray-300 border-b-2 py-1 placeholder:text-gray-600 w-full focus:border-gray-500 focus:placeholder:text-gray-700"
-                        type="password"
-                        name="password2"
-                        placeholder="Retype new password"
-                        onChange={manageForm}
-                        required={true}
-                      />
-                      <span
-                        className={`text-sm text-red-500 pt-1 ${
-                          messages.password ? "opacity-100" : "opacity-0"
-                        }`}
-                      >
-                        {messages.password || "."}
-                      </span>
-                    </div>
                     <button
-                      type="submit"
-                      disabled={
-                        !(
-                          formData.currentPassword &&
-                          formData.password1 == formData.password2
-                        )
-                      }
-                      className={`px-4 py-3 w-full mt-1 rounded-full active:scale-[0.98] transition-all flex items-center justify-center bg-gray-900 text-white font-semibold text-lg disabled:opacity-50 disabled:pointer-events-none ${
-                        isLoading ? "opacity-50 cursor-wait" : ""
-                      }`}
+                      id="close"
+                      className="p-2 w-full flex items-center justify-center sm:w-auto sm:h-full sm:left-0 sm:absolute"
                     >
-                      {isLoading ? "Changing..." : "Change"}
+                      <div className="rounded-full bg-gray-200 w-20 h-1 sm:h-20 sm:w-1"></div>
                     </button>
-                  </form>
+                    <form
+                      onSubmit={changePassword}
+                      method="POST"
+                      className="flex flex-col items-center justify-center p-8"
+                    >
+                      <h1 className="text-2xl w-full mb-2">
+                        Change Your Password
+                      </h1>
+                      <div className="w-full my-1 text-lg flex flex-col">
+                        <input
+                          className="border-gray-300 border-b-2 py-1 placeholder:text-gray-600 w-full focus:border-gray-500 focus:placeholder:text-gray-700"
+                          type="password"
+                          name="old_password"
+                          placeholder="Current password"
+                          autocomplete="current-password"
+                          onChange={manageForm}
+                          required={true}
+                        />
+                        <span
+                          className={`text-sm text-red-500 pt-1 ${
+                            messages.old_password ? "opacity-100" : "opacity-0"
+                          }`}
+                        >
+                          {messages.old_password || "."}
+                        </span>
+                      </div>
+                      <div className="w-full my-1 text-lg flex flex-col">
+                        <input
+                          className="border-gray-300 border-b-2 py-1 placeholder:text-gray-600 w-full focus:border-gray-500 focus:placeholder:text-gray-700"
+                          type="password"
+                          name="new_password1"
+                          placeholder="New password"
+                          autocomplete="new-password"
+                          onChange={manageForm}
+                          pattern=".{8,}"
+                          required={true}
+                        />
+                        <span
+                          className={`text-sm text-red-500 pt-1 ${
+                            messages.new_password1 ? "opacity-100" : "opacity-0"
+                          }`}
+                        >
+                          {messages.new_password1 || "Password is too short."}
+                        </span>
+                      </div>
+                      <div className="w-full my-1 text-lg flex flex-col">
+                        <input
+                          className="border-gray-300 border-b-2 py-1 placeholder:text-gray-600 w-full focus:border-gray-500 focus:placeholder:text-gray-700"
+                          type="password"
+                          name="new_password2"
+                          placeholder="Retype new password"
+                          autocomplete="new-password"
+                          onChange={manageForm}
+                          required={true}
+                        />
+                        <span
+                          className={`text-sm text-red-500 pt-1 ${
+                            messages.new_password2 ? "opacity-100" : "opacity-0"
+                          }`}
+                        >
+                          {messages.new_password2 || "."}
+                        </span>
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={
+                          !(
+                            formData.old_password &&
+                            formData.new_password1 == formData.new_password2
+                          )
+                        }
+                        className={`px-4 py-3 w-full mt-1 rounded-full active:scale-[0.98] transition-all flex items-center justify-center bg-gray-900 text-white font-semibold text-lg disabled:opacity-50 disabled:pointer-events-none ${
+                          isLoading ? "opacity-50 cursor-wait" : ""
+                        }`}
+                      >
+                        {isLoading ? "Changing..." : "Change"}
+                      </button>
+                    </form>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                ""
+              )}
             </div>
 
             <div className="flex justify-between mb-4">
@@ -2133,7 +3406,7 @@ const SettingsView = ({}) => {
               <div>
                 <button
                   onClick={() => setShowSide("killother")}
-                  className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-full active:scale-[0.98] active:opacity-90 transition-all"
+                  className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-full active:scale-[0.98] active:opacity-90 transition-all hover:border-gray-700 focus-visible:border-gray-700"
                 >
                   Kill other
                 </button>
@@ -2161,7 +3434,7 @@ const SettingsView = ({}) => {
               <div>
                 <button
                   onClick={() => setShowSide("signout")}
-                  className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-full active:scale-[0.98] active:opacity-90 transition-all"
+                  className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-full active:scale-[0.98] active:opacity-90 transition-all hover:border-gray-700 focus-visible:border-gray-700"
                 >
                   Sign out
                 </button>
@@ -2189,7 +3462,7 @@ const SettingsView = ({}) => {
               <div>
                 <button
                   onClick={() => setShowSide("delete")}
-                  className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-full active:scale-[0.98] active:opacity-90 transition-all"
+                  className="whitespace-pre py-1 px-3  border-2 border-gray-300 rounded-full active:scale-[0.98] active:opacity-90 transition-all hover:border-gray-700 focus-visible:border-gray-700"
                 >
                   Delete
                 </button>
@@ -2199,8 +3472,8 @@ const SettingsView = ({}) => {
                   sideName="delete"
                   title="Delete your account?"
                   about="Permanently delete your account and all of your contents"
-                  btn="Delelte"
-                  func={deleteAccount}
+                  btn="Delete"
+                  func={null}
                 />
               ) : (
                 ""
@@ -2316,260 +3589,367 @@ const SettingsView = ({}) => {
 const PostDetail = ({}) => {
   const [data, setData] = useContext(Context);
   const [post, setPost] = useState({});
-  const [showComments, setShowComments] = useState(false);
-  const [isReady, setIsReady] = useState(false);
+  const [posts, setPosts] = useState({ items: [], hasNext: true });
+  // const [showComments, setShowComments] = useState(false);
   const url = useParams();
-  useEffect(() => {
-    // emulate give from server
-    setData({...data,["me"]: tempuser});
-    setTimeout(() => {
-      setPost(temppost);
-      setIsReady(true);
-    }, 1000);
-  }, [1]);
 
-  const Comment = ({ comment, loading }) => {
-    let e;
-    if (loading) {
-      e = (
-        <div className="sm:first:mt-2 px-2 py-2 border-b-2 border-gray-100">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center w-full fadeInLoad relative overflow-hidden ">
-              <div className="h-12 w-12 rounded-full m-1 bg-gray-200 "></div>
-              <div className="flex flex-col p-1 w-4/5 ">
-                <div className="h-4 w-4/5 bg-gray-200 rounded-full"></div>
-
-                <div className="h-3 w-1/5 bg-gray-200 rounded-full mt-1"></div>
-              </div>
-            </div>
-          </div>
-          <div className="mt-3 my-1 h-3 w-full rounded-full bg-gray-200 overflow-hidden fadeInLoad relative"></div>
-          <div className="my-1 h-3 w-3/4 rounded-full bg-gray-200 overflow-hidden fadeInLoad relative"></div>
-        </div>
-      );
-    } else {
-      e = (
-        <div className="sm:first:mt-2 px-2 py-2 border-b-2 border-gray-100">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center w-full overflow-hidden">
-              <img
-                src={comment.user.profile}
-                alt={`${comment.user.name}'s image`}
-                className="h-12 w-12 rounded-full p-1"
-              />
-              <div className="flex flex-col p-1 w-full">
-                <Link
-                  name={comment.user.name}
-                  onClick={setTitle}
-                  to={`/@${comment.user.username}`}
-                  className="text-md w-[80%] truncate"
-                >
-                  {comment.user.name}
-                </Link>
-                <span className="text-gray-500 text-sm">
-                  {timeSince(comment.date)}
-                </span>
-              </div>
-            </div>
-
-            <button className="p-2 flex items-center">
-              <i className="bi bi-three-dots text-gray-500"></i>
-            </button>
-          </div>
-          <p className="text-sm mt-1">{comment.text}</p>
-        </div>
-      );
+  const getPost = (username = url.username, slug = url.postSlug) => {
+    $.ajax({
+      method: "POST",
+      url: `/api/@${username}/${slug}`,
+      data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken },
+      success: (r) => {
+        if (r.result) {
+          setPost({ ...r.post, ["isReady"]: true });
+        } else {
+          showMsg("Server error");
+        }
+      },
+      error: () => {
+        showMsg("An unknown nerwoek error has occurred");
+        setTimeout(getPost, 10000);
+      },
+    });
+  };
+  const getPosts = (username = url.username) => {
+    if (posts.hasNext) {
+      $.ajax({
+        method: "POST",
+        url: `/api/posts/@${username}`,
+        data: {
+          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+          page: posts.items.length / 15 + 1,
+        },
+        success: (r) => {
+          if (r.result) {
+            r["items"] = posts.items.concat(r.items);
+            r["isReady"] = true;
+            setPosts(r);
+          } else {
+            showMsg("Server error");
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+          setTimeout(getPosts, 10000);
+        },
+      });
     }
-    return e;
   };
 
+  useEffect(() => {
+    getPost();
+    getPosts();
+  }, [1]);
+
+  useEffect(() => {
+    const lastChild = document.querySelector(".postsContainer > *:last-child");
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          getPosts();
+        }
+      });
+    });
+    if (lastChild) {
+      observer.observe(lastChild);
+    }
+  }, [posts]);
+
+  // const Comment = ({ comment, loading }) => {
+  //   if (loading) {
+  //     retrun(
+  //       <div className="sm:first:mt-2 px-2 py-2 border-b-2 border-gray-100">
+  //         <div className="flex items-center justify-between">
+  //           <div className="flex items-center w-full fadeInLoad relative overflow-hidden ">
+  //             <div className="h-12 w-12 rounded-full m-1 bg-gray-200 "></div>
+  //             <div className="flex flex-col p-1 w-4/5 ">
+  //               <div className="h-4 w-4/5 bg-gray-200 rounded-full"></div>
+
+  //               <div className="h-3 w-1/5 bg-gray-200 rounded-full mt-1"></div>
+  //             </div>
+  //           </div>
+  //         </div>
+  //         <div className="mt-3 my-1 h-3 w-full rounded-full bg-gray-200 overflow-hidden fadeInLoad relative"></div>
+  //         <div className="my-1 h-3 w-3/4 rounded-full bg-gray-200 overflow-hidden fadeInLoad relative"></div>
+  //       </div>
+  //     );
+  //   } else {
+  //     return (
+  //       <div className="sm:first:mt-2 px-2 py-2 border-b-2 border-gray-100">
+  //         <div className="flex items-center justify-between">
+  //           <div className="flex items-center w-full overflow-hidden">
+  //             <img
+  //               src={comment.user.profile}
+  //               alt={`${comment.user.name}'s image`}
+  //               className="h-12 w-12 rounded-full p-1"
+  //             />
+  //             <div className="flex flex-col p-1 w-full">
+  //               <Link
+  //                 name={comment.user.name}
+  //                 onClick={setTitle}
+  //                 to={`/@${comment.user.username}`}
+  //                 className="text-md w-[80%] truncate"
+  //               >
+  //                 {comment.user.name}
+  //               </Link>
+  //               <span className="text-gray-500 text-sm">
+  //                 {timeSince(comment.date)}
+  //               </span>
+  //             </div>
+  //           </div>
+
+  //           <button className="p-2 flex items-center">
+  //             <i className="bi bi-three-dots text-gray-500"></i>
+  //           </button>
+  //         </div>
+  //         <p className="text-sm mt-1">{comment.text}</p>
+  //       </div>
+  //     );
+  //   }
+  // };
+
   const fallow = () => {
-    data.setAlert(
-      () => {
-        // send to server
-        setPost({
-          ...post,
-          ["user"]: { ...post.user, ["fallowed"]: !post.user.fallowed },
-        });
-      },
-      data.me.id,
-      "You are not logged in."
-    );
+    if (data.me.id) {
+      $.ajax({
+        method: "POST",
+        url: `/api/fallow/@${post.user.username}`,
+        data: {
+          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+          id: post.user.id,
+        },
+        success: (r) => {
+          if (r.result) {
+            setPost({
+              ...post,
+              ["user"]: { ...post.user, ["fallowed"]: !post.user.fallowed },
+            });
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+        },
+      });
+    } else {
+      showMsg("Please login");
+    }
   };
 
   const bookmark = () => {
-    data.setAlert(
-      () => {
-        // send to server
-        setPost({ ...post, ["bookmark"]: !post.bookmark });
-      },
-      data.me.id,
-      "You are not logged in."
-    );
-  };
-
-  const like = () => {
-    data.setAlert(
-      () => {
-        // send to server
-        setPost({ ...post, ["liked"]: !post.liked });
-      },
-      data.me.id,
-      "You are not logged in."
-    );
-  };
-
-  const closeSide = (e) => {
-    if (e.target.id == "close") {
-      setShowComments(false);
+    if (data.me.id) {
+      $.ajax({
+        method: "POST",
+        url: `/api/@${post.user.username}/${post.slug}/bookmark`,
+        data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken, id: post.id },
+        success: (r) => {
+          if (r.result) {
+            setPost({ ...post, ["bookmark"]: !post.bookmark });
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+        },
+      });
+    } else {
+      showMsg("Please login");
     }
   };
 
-  const addComment = (e) => {
-    // send to server
-    const text = e.target.parentElement.children[1].value;
+  const like = () => {
+    if (data.me.id) {
+      $.ajax({
+        method: "POST",
+        url: `/api/@${post.user.username}/${post.slug}/like`,
+        data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken, id: post.id },
+        success: (r) => {
+          if (r.result) {
+            setPost({
+              ...post,
+              ["likes"]: post.liked ? post.likes - 1 : post.likes + 1,
+            });
+            setPost({ ...post, ["liked"]: !post.liked });
+          }
+        },
+        error: () => {
+          showMsg("An unknown nerwoek error has occurred");
+        },
+      });
+    } else {
+      showMsg("Please login");
+    }
   };
 
-  const Container = ({}) => {
-    const [isReady, setIsReady] = useState(false);
-    const [comments, setComments] = useState([]);
+  // const closeSide = (e) => {
+  //   if (e.target.id == "close") {
+  //     setShowComments(false);
+  //   }
+  // };
 
-    useEffect(() => {
-      // emulate give from server
-      setTimeout(() => {
-        setComments([tempcomment]);
-        setIsReady(true);
-      }, 1000);
-    }, [1]);
+  // const addComment = (e) => {
+  //   // send to server
+  //   const text = e.target.parentElement.children[1].value;
+  // };
 
-    return (
-      <div
-        id="close"
-        onClick={closeSide}
-        className={`bg-[#00000078] backdrop-blur-sm fixed w-screen h-screen right-0 top-0 flex flex-col-reverse sm:flex-row-reverse z-[90] ${
-          showComments ? "" : "opacity-0 pointer-events-none"
-        }`}
-      >
-        <div
-          className={`${
-            showComments
-              ? "translate-0"
-              : "translate-y-[100%] sm:translate-x-[100%] sm:translate-y-0"
-          } transition-all border-2 border-gray-100 flex flex-col z-20 bg-white absolute rounded-tr-3xl rounded-tl-3xl w-full h-4/5 sm:rounded-tr-none sm:rounded-bl-3xl sm:h-full sm:w-[28rem]`}
-        >
-          <button
-            id="close"
-            className="p-2 w-full flex items-center justify-center sm:w-auto sm:h-full sm:left-0 sm:absolute"
-          >
-            <div className="rounded-full bg-gray-200 w-20 h-1 sm:h-20 sm:w-1"></div>
-          </button>
-          <div className="overflow-auto h-full sm:ml-4 px-2 pb-2">
-            {isReady
-              ? comments.map((i) => <Comment comment={i} id={i.id} />)
-              : [1, 2, 3, 4, 5, 6, 6].map((i) => (
-                  <Comment loading={true} id={i} />
-                ))}
-          </div>
-          {data.me.id ? (
-            <div className="w-full p-2 flex border-t-2 border-gray-100">
-              <img
-                src={data.me.profile}
-                alt={`${data.me.name}'s image`}
-                className="rounded-full h-9 w-9 p-1"
-              />
-              <input
-                type="text"
-                placeholder="Add a comment"
-                className="p-1 w-full"
-              />
-              <button
-                onClick={addComment}
-                className="p-1 text-indigo-500 hover:text-indigo-700 "
-              >
-                Post
-              </button>
-            </div>
-          ) : (
-            ""
-          )}
-        </div>
-      </div>
-    );
-  };
+  // const Container = ({}) => {
+  //   const [isReady, setIsReady] = useState(false);
+  //   const [comments, setComments] = useState([]);
+
+  //   useEffect(() => {
+  //     // emulate give from server
+  //     setTimeout(() => {
+  //       setComments([tempcomment]);
+  //       setIsReady(true);
+  //     }, 1000);
+  //   }, [1]);
+
+  //   return (
+  //     <div
+  //       id="close"
+  //       onClick={closeSide}
+  //       className={`bg-[#00000078] backdrop-blur-sm fixed w-screen h-screen right-0 top-0 flex flex-col-reverse sm:flex-row-reverse z-20 ${
+  //         showComments ? "" : "opacity-0 pointer-events-none"
+  //       }`}
+  //     >
+  //       <div
+  //         className={`${
+  //           showComments
+  //             ? "translate-0"
+  //             : "translate-y-[100%] sm:translate-x-[100%] sm:translate-y-0"
+  //         } transition-all border-2 border-gray-100 flex flex-col bg-white absolute rounded-tr-3xl rounded-tl-3xl w-full h-4/5 sm:rounded-tr-none sm:rounded-bl-3xl sm:h-full sm:w-[28rem]`}
+  //       >
+  //         <button
+  //           id="close"
+  //           className="p-2 w-full flex items-center justify-center sm:w-auto sm:h-full sm:left-0 sm:absolute"
+  //         >
+  //           <div className="rounded-full bg-gray-200 w-20 h-1 sm:h-20 sm:w-1"></div>
+  //         </button>
+  //         <div className="overflow-auto h-full sm:ml-4 px-2 pb-2">
+  //           {isReady
+  //             ? comments.map((i) => <Comment comment={i} id={i.id} />)
+  //             : [1, 2, 3, 4, 5, 6, 6].map((i) => (
+  //                 <Comment loading={true} id={i} />
+  //               ))}
+  //         </div>
+  //         {data.me.id ? (
+  //           <div className="w-full p-2 flex border-t-2 border-gray-100">
+  //             <img
+  //               src={data.me.profile}
+  //               alt={`${data.me.name}'s image`}
+  //               className="rounded-full h-9 w-9 p-1"
+  //             />
+  //             <input
+  //               type="text"
+  //               placeholder="Add a comment"
+  //               className="p-1 w-full"
+  //             />
+  //             <button
+  //               onClick={addComment}
+  //               className="p-1 text-indigo-500 hover:text-indigo-700 "
+  //             >
+  //               Post
+  //             </button>
+  //           </div>
+  //         ) : (
+  //           ""
+  //         )}
+  //       </div>
+  //     </div>
+  //   );
+  // };
 
   return (
     <main>
       <main className="mt-16 mb-16 sm:m-0 sm:ml-16 flex items-center justify-center">
-        {isReady ? (
-          <section className="p-6 max-w-6xl w-full">
-            <div className="head flex items-center justify-between">
-              <div className="flex items-center ">
-                <img
-                  src={post.user.profile}
-                  alt={`${post.user.name}'s image`}
-                  className="w-12 h-12 rounded-full "
-                />
+        <section className="p-6 max-w-6xl w-full">
+          {post.isReady ? (
+            <div>
+              <div className="head flex items-center justify-between">
+                <div className="flex items-center ">
+                  <img
+                    src={post.user.profile}
+                    alt={`${post.user.name}'s image`}
+                    className="w-12 h-12 rounded-full "
+                  />
 
-                <div className="flex flex-col ml-3 ">
-                  <Link
-                    name={post.user.name}
-                    onClick={setTitle}
-                    to={`/@${post.user.username}`}
-                    className="text-md sm:text-xl font-semibold  max-w-[13ch] sm:max-w-[25ch] lg:max-w-[50ch]"
-                  >
-                    {post.user.name}
-                  </Link>
-                  <div>
-                    <span className="text-gray-500 whitespace-pre">
-                      {timeSince(post.date)}
-                    </span>
-                    <span className="text-gray-500 mx-1 hidden sm:inline">•</span>
-                    <span className="text-gray-500 whitespace-pre hidden sm:inline">
-                      {Math.ceil(post.text.split(" ").length / 200)} min{" "}
-                      <span className="hidden md:inline">read</span>
-                    </span>
+                  <div className="flex flex-col ml-3 ">
+                    <Link
+                      name={post.user.name}
+                      onClick={setTitle}
+                      to={
+                        data.me.id == post.user.id
+                          ? "/me"
+                          : `/@${post.user.username}`
+                      }
+                      className="text-md sm:text-xl font-semibold  max-w-[13ch] sm:max-w-[25ch] lg:max-w-[50ch]"
+                    >
+                      {post.user.name}
+                    </Link>
+                    <div>
+                      <span className="text-gray-500 whitespace-pre">
+                        {timeSince(post.date)}
+                      </span>
+                      <span className="text-gray-500 mx-1 hidden sm:inline">
+                        •
+                      </span>
+                      <span className="text-gray-500 whitespace-pre hidden sm:inline">
+                        {Math.ceil(cleanMd(post.text).split(" ").length / 200)}{" "}
+                        min <span className="hidden md:inline">read</span>
+                      </span>
+                    </div>
                   </div>
                 </div>
+                {data.me.id == post.user.id ? (
+                  <Link
+                    to={`/write/${post.id}`}
+                    className="py-1 px-3 rounded-full active:scale-[0.98] transition-all border-2 border-gray-900 "
+                  >
+                    Edit
+                  </Link>
+                ) : (
+                  <button
+                    onClick={fallow}
+                    className={`py-1 px-3 rounded-full active:scale-[0.98] transition-all border-2 border-indigo-500 focus-visible:scale-110 ${
+                      post.user.fallowed
+                        ? "text-indigo-500  bg-white"
+                        : "text-white bg-indigo-500"
+                    } `}
+                  >
+                    {post.user.fallowed ? "Unfallow" : "Fallow"}
+                  </button>
+                )}
               </div>
 
-              <button
-                onClick={fallow}
-                className={`py-1 px-3 rounded-full active:scale-[0.98] transition-all border-2 border-indigo-500 ${
-                  post.user.fallowed
-                    ? "text-indigo-500  bg-white"
-                    : "text-white bg-indigo-500"
-                } `}
-              >
-                {post.user.fallowed ? "Unfallow" : "Fallow"}
-              </button>
-            </div>
-
-            <div className="tags flex mt-3 items-center justify-between">
-              <div className="relative flex items-center whitespace-pre w-[calc(100%-1rem)] overflow-hidden  after:bg-gradient-to-l after:from-white after:to-transparent after:right-0 after:absolute after:h-full after:w-6">
-                {post.tags.map((i) => (
-                  <Tag tag={i} id={i.id} />
-                ))}
+              <div className="tags flex mt-3 items-center justify-between">
+                <div className="relative flex items-center whitespace-pre w-[calc(100%-1rem)] overflow-hidden  after:bg-gradient-to-l after:from-white after:to-transparent after:right-0 after:absolute after:h-full after:w-6">
+                  {post.tags.map((i) => (
+                    <Tag tag={i} id={i.id} />
+                  ))}
+                </div>
+                <button
+                  onClick={bookmark}
+                  className="flex focus-visible:scale-110"
+                >
+                  <i
+                    className={`bi bi-bookmark-${
+                      post.bookmark ? "fill" : "plus"
+                    } p-1 cursor-pointer mx-1 `}
+                  ></i>
+                </button>
               </div>
-              <button onClick={bookmark} className="flex">
-                <i
-                  className={`bi bi-bookmark-${
-                    post.bookmark ? "fill" : "plus"
-                  } p-1 cursor-pointer mx-1 `}
-                ></i>
-              </button>
-            </div>
 
-            <article
-              dir="auto"
-              className="mt-2"
-              dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(marked.parse(post.text)),
-              }}
-            />
+              <article
+                dir="auto"
+                className="mt-2"
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(
+                    marked.parse("# " + post.title + "\n" + post.text)
+                  ),
+                }}
+              />
 
-            <div className="flex mt-6 items-center justify-between text-lg">
-              <div className="flex ">
-                <button className="mr-2" onClick={like}>
+              <div className="flex mt-6 items-center justify-around text-xl">
+                <button className="mr-2 focus-visible:scale-110" onClick={like}>
                   <i
                     className={`bi bi-heart${
                       post.liked ? "-fill" : ""
@@ -2579,129 +3959,134 @@ const PostDetail = ({}) => {
                     {nFormatter(post.likes)}
                   </span>
                 </button>
-                <button className="mr-2" onClick={() => setShowComments(true)}>
+                <button
+                  className="mr-2 focus-visible:scale-110"
+                  onClick={() => showMsg("This session still not work")}
+                >
                   <i className="bi-chat p-1 text-gray-700"></i>
                   <span className="py-1 text-gray-500 text-md">
                     {nFormatter(post.comments)}
                   </span>
                 </button>
-                {showComments ? <Container /> : ""}
-              </div>
-              <div className="flex">
-                <i
+                {/* {showComments ? <Container /> : ""} */}
+                <button
+                  className="mr-2 focus-visible:scale-110"
                   onClick={bookmark}
-                  className={`bi bi-bookmark-${
-                    post.bookmark ? "fill" : "plus"
-                  } p-1 cursor-pointer mx-1  text-gray-700`}
-                ></i>
-                <i className="bi bi-three-dots pr-0 p-1 cursor-pointer mx-1 text-gray-700"></i>
+                >
+                  <i
+                    className={`bi bi-bookmark-${
+                      post.bookmark ? "fill" : "plus"
+                    } p-1 cursor-pointer mx-1  text-gray-700`}
+                  ></i>
+                  {/* <i className="bi bi-three-dots pr-0 p-1 cursor-pointer mx-1 text-gray-700"></i> */}
+                </button>
               </div>
             </div>
+          ) : (
+            <div>
+              <div className="head flex items-center justify-between">
+                <div className="flex items-center overflow-hidden fadeInLoad relative">
+                  <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden relative" />
 
-            <div className="reccomeneds mt-14">
+                  <div className="flex flex-col ml-3">
+                    <div className="max-w-[19ch] sm:max-w-[25ch] lg:max-w-[50ch] h-4 bg-gray-200 rounded-full " />
+                    <div className="flex mt-1 items-center">
+                      <div className="bg-gray-200 h-3 rounded-full w-16" />
+                      <span className="text-gray-200 mx-1">•</span>
+                      <div className="bg-gray-200 h-3 rounded-full w-16" />
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  className={`py-1 px-3 rounded-full bg-gray-200 relative fadeInLoad overflow-hidden  w-20 h-8`}
+                />
+              </div>
+
+              <div className="tags flex mt-3 items-center justify-between">
+                <div className="relative flex items-center whitespace-pre w-[calc(100%-1rem)] overflow-hidden  after:bg-gradient-to-l after:from-white after:to-transparent after:right-0 after:absolute after:h-full after:w-6">
+                  {[1, 2, 3, 4].map((i) => (
+                    <Tag loading={true} id={i} />
+                  ))}
+                </div>
+              </div>
+
+              <article className="mt-2">
+                <div className="my-4 mb-2 w-1/2 h-5 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+
+                <div className="my-4 mb-2 w-1/2 h-5 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="mb-3 w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+
+                <div className="my-3 rounded-xl bg-gray-200 relative overflow-hidden fadeInLoad w-full h-64" />
+
+                <div className="mt-2 w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="mb-3 w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+
+                <div className="my-4 mb-2 w-1/2 h-5 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="mb-3 w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+
+                <div className="my-3 rounded-xl bg-gray-200 relative overflow-hidden fadeInLoad w-full h-64" />
+
+                <div className="mt-2 w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="mb-3 w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+
+                <div className="my-4 mb-2 w-1/2 h-5 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                <div className="mb-3 w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+              </article>
+            </div>
+          )}
+
+          <div className="reccomeneds mt-14">
+            {post.isReady ? (
               <h1 className="text-3xl border-b-2 border-gray-300 mb-4 py-2">
                 More From
                 <Link
                   name={post.user.name}
                   onClick={setTitle}
-                  to={`/@${post.user.username}`}
+                  to={
+                    data.me.id == post.user.id
+                      ? "/me"
+                      : `/@${post.user.username}`
+                  }
                   className="text-indigo-500 mx-1"
                 >
                   {post.user.name}
                 </Link>
               </h1>
-              <div>
-                {post.user.posts.map((p) => (
-                  <Post post={p} id={p.id} />
-                ))}
-              </div>
-            </div>
-          </section>
-        ) : (
-          <section className="p-6 max-w-6xl w-full">
-            <div className="head flex items-center justify-between">
-              <div className="flex items-center overflow-hidden fadeInLoad relative">
-                <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden relative" />
-
-                <div className="flex flex-col ml-3">
-                  <div className="max-w-[19ch] sm:max-w-[25ch] lg:max-w-[50ch] h-4 bg-gray-200 rounded-full " />
-                  <div className="flex mt-1 items-center">
-                    <div className="bg-gray-200 h-3 rounded-full w-16" />
-                    <span className="text-gray-200 mx-1">•</span>
-                    <div className="bg-gray-200 h-3 rounded-full w-16" />
-                  </div>
-                </div>
-              </div>
-
-              <div
-                className={`py-1 px-3 rounded-full bg-gray-200 relative fadeInLoad overflow-hidden  w-20 h-8`}
-              />
-            </div>
-
-            <div className="tags flex mt-3 items-center justify-between">
-              <div className="relative flex items-center whitespace-pre w-[calc(100%-1rem)] overflow-hidden  after:bg-gradient-to-l after:from-white after:to-transparent after:right-0 after:absolute after:h-full after:w-6">
-                {[1, 2, 3, 4].map((i) => (
-                  <Tag loading={true} id={i} />
-                ))}
-              </div>
-            </div>
-
-            <article className="mt-2">
-              <div className="my-4 mb-2 w-1/2 h-5 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-
-              <div className="my-4 mb-2 w-1/2 h-5 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="mb-3 w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-
-              <div className="my-3 rounded-xl bg-gray-200 relative overflow-hidden fadeInLoad w-full h-64" />
-
-              <div className="mt-2 w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="mb-3 w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-
-              <div className="my-4 mb-2 w-1/2 h-5 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="mb-3 w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-
-              <div className="my-3 rounded-xl bg-gray-200 relative overflow-hidden fadeInLoad w-full h-64" />
-
-              <div className="mt-2 w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="mb-3 w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-
-              <div className="my-4 mb-2 w-1/2 h-5 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              <div className="mb-3 w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-            </article>
-
-            <div className="reccomeneds mt-14">
+            ) : (
               <div className="border-b-2 border-gray-300 mb-4 py-2">
                 <div className="h-6 w-3/4 bg-gray-200 overflow-hidden relative fadeInLoad rounded-full" />
               </div>
-              <div>
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Post loading={true} id={i} />
-                ))}
-              </div>
+            )}
+
+            <div className="postsContainer">
+              {posts.isReady
+                ? posts.items.map((p) => <Post post={p} id={p.id} />)
+                : [1, 2, 3, 4, 5].map((i) => <Post loading={true} id={i} />)}
+              {!posts.isReady && posts.hasNext ? <Loading /> : ""}
             </div>
-          </section>
-        )}
+          </div>
+        </section>
       </main>
     </main>
   );
 };
-

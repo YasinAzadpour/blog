@@ -1,5 +1,6 @@
 
 *{
+  scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
 }
 ::selection {
@@ -132,7 +133,7 @@ article blockquote{
   font-size: 1.25rem; /* 20px */
   line-height: 1.75rem; /* 28px */
   background: #e5e7eb;
-  margin: .75rem .5rem;
+  margin: .75rem;
   padding: .75rem;
   border-left: 5px solid #111827;
 }
@@ -217,3 +218,6 @@ article li p{
       right: -4rem;
     }
   }
+:focus-visible,:focus{
+  outline: none;
+}

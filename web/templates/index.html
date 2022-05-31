@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>BACKSLASH - Home</title>
+    <title>BACKSLASH {% if title %}- {{title}}{% endif %}</title>
     <link
       rel="stylesheet"
       href="{% static 'CSS/icons/font/bootstrap-icons.css' %}"
@@ -41,114 +41,17 @@
       </main>
     </main>
   </body>
-  {% comment %} just for test UI {% endcomment %}
-  <script>
-    const tempminiuser = {
-      id: 235,
-      username: "username",
-      name: "user",
-      profile: "/media/simple.jpg",
-      bio: "Hello world ;)",
-      email: "admin@admin.com",
-      fallowers: 35,
-      posts: [],
-      fallowed: true,
-    };
-
-    const temptag = { id: 5, name: "OS", slug: "tag-hi.asdg", fallowed: true };
-    const temptags = [temptag, temptag, temptag];
-    const tempcomment = {
-      user: {
-        username: "username",
-        name: "user's name",
-        profile: "/media/simple.jpg",
-      },
-      text: " klsadl sadldkg lkasdglk sadgl alkdsg ;lkaglk ",
-      date: 1652558214827,
-    };
-
-    const temptext =
-      'This is my first post and I\'m Writing this at 14:00 o\'clock .\nI\'m very happy because this is my secend project I finished.\n\n-------\n\nother ways this for test *code* highlighting:\n\n```c\n// hello world\n# include <stdio.h>\n\nint main ()\n{\n    printf("%s", "Hello World");\n    return 0;\n}\n\n```';
-
-    const tempuser = {
-      id: 235,
-      username: "username",
-      name: "user",
-      profile: "/media/simple.jpg",
-      bio: "Hello world ;)",
-      email: "admin@admin.com",
-      fallowers: 345,
-      fallowings: 5346346,
-      tags: 246346346,
-      posts: [
-        {
-          id: 2,
-          date: 1652558214827,
-          title: "Assemply",
-          slug: "slug-of-post",
-          user: tempminiuser,
-          tags: temptags,
-          text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quaerat nulla vel perspiciatis nam modi odio!",
-        },
-      ],
-    };
-    const tempminipost = {
-      id: 2,
-      date: 1652558214827,
-      title: "Assemply",
-      slug: "slug-of-post",
-      user: tempminiuser,
-      tags: temptags,
-      text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quaerat nulla vel perspiciatis nam modi odio!",
-      bookmark: 1,
-    };
-
-    const temppost = {
-      id: 2,
-      date: 1652558214827,
-      title: "Hello world in assemply",
-      slug: "slug-of-post",
-      user: {
-        id: 235,
-        username: "username",
-        name: "user",
-        profile: "/media/simple.jpg",
-        bio: "Hello world ;)",
-        email: "admin@admin.com",
-        fallowers: 35,
-        posts: [],
-        fallowed: true,
-      },
-      tags: temptags,
-      liked: 0,
-      bookmark: 1,
-      likes: 234234,
-      comments: 234235,
-      text: temptext,
-    };
-  </script>
   <script type="text/jsx">
     const Context = createContext();
     const csrfmiddlewaretoken = "{{ csrfmiddlewaretoken }}";
 
-
     const App = () => {
-      
-      const setAlert = (func, condition, msg) =>{
-        if (condition) {
-          func();
-        } else {
-          setData({ ...data, ["alert"]: msg });
-          setTimeout(() => setData({ ...data, ["alert"]: null }), 5000);
-        }
-      }
-    
+      const [isReady, setIsReady] = useState(false);
       const [data, setData] = useState({
         csrfmiddlewaretoken: csrfmiddlewaretoken,
         me: {},
-        setAlert: setAlert,
+        setIsReady: setIsReady,
       });
-      const [isReady, setIsReady] = useState(false);
       const [state, setState] = useState("Home");
     
       useEffect(() => {
@@ -173,16 +76,7 @@
           }
         }, 200);
       }, [state]);
-    
-    
-      useEffect(() => {
-        // emulate give from server
-        setTimeout(() => {
-          setData({...data,["me"]: tempuser});
-          setIsReady(true);
-        }, 1000);
-      }, [1]);
-    
+      
       return (
         <Router>
     
@@ -195,11 +89,13 @@
                 <Route path="/@:username">
                   <PeopleView />
                 </Route>
+                <Route path="/write/:id">
+                  <WriteView />
+                </Route>
                 <Route exact path="/">
                     <Home />
                 </Route>
-    
-                <Route path="/t/:tag">
+                <Route path="/t/:name">
                   <TagView />
                 </Route>
                 <Route path="/search">
@@ -217,11 +113,9 @@
                 <Route path="/me">
                   <MeView />
                 </Route>
-    
                 <Route path="/accounts/sign-in">
                   <Auth page="Sign-in" />
                 </Route>
-    
                 <Route path="/accounts/sign-up">
                   <Auth page="Sign-up" />
                 </Route>
@@ -230,9 +124,8 @@
             <Navbar state={state} loading={!isReady} />
           </Context.Provider>
           
-          <div className={`transition-all bottom-[20%] fixed flex items-center w-screen justify-center right-0 ${data.alert?"":"opacity-0 pointer-events-none"}`}>
-            <div id="alert" className="border-2 px-6 py-2 z-[9999] rounded-full bg-white">
-              {data.alert}
+          <div id="msgContainer" className="transition-all bottom-[20%] fixed flex items-center w-screen justify-center right-0 opacity-0 pointer-events-none z-30">
+            <div id="msg" className="px-6 py-2 rounded-full bg-gray-900 text-white">
             </div>
           </div>
           
