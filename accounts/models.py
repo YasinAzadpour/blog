@@ -1,13 +1,14 @@
 import os
+from uuid import uuid4
 
 import cv2
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core import files, validators
 from django.db import models
+from django.db.models import Q
 from django.utils.deconstruct import deconstructible
 from django.utils.translation import gettext_lazy as _
-from posts.models import Tag, Post
 
 
 @deconstructible
@@ -26,17 +27,17 @@ class MyUser(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
     profile = models.ImageField(_('profile image'), blank=True, upload_to='users/')
     first_name = last_name = None  # use name instead of first_name and last_name
-    fallowing_users = models.ManyToManyField('self', symmetrical=False, blank=True)
-    fallowing_tags = models.ManyToManyField('posts.tag', blank=True)
+    fallowing_users = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='fallower_users')
+    fallowing_tags = models.ManyToManyField('posts.tag', blank=True, related_name='users')
+    bookmarks_post = models.ManyToManyField('posts.Post', blank=True, related_name='bookmarked_users')
 
     @property
     def tags(self):
         return self.fallowing_tags.all()
 
-    def add_fallowing(self, pk):
-        tag = Tag.objects.get(pk=pk)
-        self.fallowing_tags.add(tag)
-        return self.tags
+    @property
+    def bookmarks(self):
+        return self.bookmarks_post.all().order_by('-date')
 
     @property
     def fallowings(self):
@@ -44,21 +45,15 @@ class MyUser(AbstractUser):
 
     @property
     def posts(self):
-        return Post.objects.filter(user=self)
+        return self.user_posts.filter(user=self, published=True)
+
+    @property
+    def dposts(self):
+        return self.user_posts.filter(user=self, published=False)
 
     @property
     def fallowers(self):
-        return MyUser.objects.filter(fallowing_users=self)
-
-    def add_fallowing(self, pk):
-        user = MyUser.objects.get(pk=pk)
-        self.fallowing_users.add(user)
-        return self.fallowings
-
-    def del_fallowing(self, pk):
-        user = MyUser.objects.get(pk=pk)
-        self.fallowing_users.remove(user)
-        return self.fallowings
+        return self.fallower_users.all()
 
     def __str__(self) -> str:
         return f"{self.username}"
@@ -81,22 +76,22 @@ class MyUser(AbstractUser):
 
             img = cv2.resize(img, settings.PROFILE_SIZE)
 
-            path = f'{settings.USER_PATH}/{self.pk}/'
+            path = f'{settings.USER_PATH}/'
             if not os.path.exists(path):
                 os.mkdir(path)
-            path += f'{self.pk}-profile.png'
+            path += f'{uuid4()}.png'
 
             self.profile.delete()
             cv2.imwrite(path, img)
 
-            self.profile = files.File(open(path, 'rb')).name.replace('web/users', '')
+            self.profile = files.File(open(path, 'rb')).name.replace('web/media', '')
             self.save()
             return True
 
         except:
             return False
 
-    def as_json(self):
+    def as_json(self, user=None):
         data = {
             'id': self.pk,
             'username': self.username,
@@ -104,17 +99,41 @@ class MyUser(AbstractUser):
             'bio': self.bio,
             'email': self.email,
             'profile': self.profile.url if self.profile else '',
+            'fallowers': self.fallowers.count(),
+            'fallowings' : self.fallowings.count(),
+            'tags': self.tags.count(),
+            'fallowed': (user in self.fallowings) or (user in self.tags) if user else False,
         }
         return data
 
-    def fallowings_as_json(self):
-        return [u.as_json() for u in self.fallowers]
+    def fallow_people(self, user):
+        if user in self.fallowings:
+            self.fallowing_users.remove(user)
+        else:
+            self.fallowing_users.add(user)
+            
+        return True
 
-    def fallowers_as_json(self):
-        return [u.as_json() for u in self.fallowers]
+    def fallow_tags(self, tag):
+        if tag in self.tags:
+            self.fallowing_tags.remove(tag)
+        else:
+            self.fallowing_tags.add(tag)
+            
+        return True
 
-    def tags_as_json(self):
-        return [t.as_json() for t in self.tags]
+    @classmethod
+    @property
+    def top(cls):
+        query = list(cls.objects.all())
+        query.sort(key=lambda user: user.fallowers.count() + (user.posts.count()*2))
+        return query[:100]
+        
+    @classmethod
+    def search(cls, text):
+        if text.isspace():
+            return []
 
-    def posts_as_json(self):
-        return [i.as_json() for i in self.posts]
+        query = list(cls.objects.filter(Q(name__icontains=text)|Q( username__istartswith=text)))
+        query.sort(key=lambda user: user.fallowers.count() + (user.posts.count()*2))
+        return query[:100]
