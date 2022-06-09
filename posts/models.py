@@ -1,3 +1,4 @@
+from turtle import width
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -54,6 +55,7 @@ class Post(models.Model):
             'likes': self.like_count,
             'bookmark': bookmark,
             'liked': liked,
+            'comments': self.comments.count()
         }
         return data
 
@@ -61,6 +63,10 @@ class Post(models.Model):
     @property
     def latests(cls):
         return cls.objects.filter(published=True).order_by('-date')
+
+    @property
+    def comments(self):
+        return self.post_comment.all()
 
     @classmethod
     def fallowings(cls, user):
@@ -125,4 +131,28 @@ class Tag(models.Model):
 
     def __str__(self):
         return f'{self.name}'
+    
+
+class Comment(models.Model):
+    user = models.ForeignKey('accounts.MyUser', on_delete=models.CASCADE, related_name="user_comments")
+    post = models.ForeignKey('posts.Post', on_delete=models.CASCADE, related_name="post_comment")
+    text =  models.TextField(max_length=1000)
+    date = models.DateTimeField(auto_now=True)
+    replaied_to = models.ForeignKey('self', on_delete=models.CASCADE, related_name="responses", null=True, blank=True)
+
+
+    def as_json(self, with_res=True):
+        data = {
+            'id': self.pk,
+            'user': self.user.as_json(),
+            'text':  self.text,
+            'data': self.date,
+            }
+        if with_res:
+            data['responses']= [i.as_json(False) for i in self.responses.all()]
+
+        return data
+
+    def __str__(self):
+        return f'{self.user.name} > {self.post.title}'
     
