@@ -7,8 +7,3 @@ def auth(request):
         return redirect('/')
     title  = request.META['PATH_INFO'].split("/")[2].replace('-',' ').capitalize()
     return render(request, 'index.html', {'title': title})
-
-
-def log_out(request):
-    logout(request)
-    return redirect('accounts:sign_in')
