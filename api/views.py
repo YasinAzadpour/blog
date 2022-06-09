@@ -191,7 +191,7 @@ def my_fallowers(request):
         p = Paginator(user.fallowers, 15)
         num_page = request.POST.get('page',1)
         this_page = p.get_page(num_page)
-        data = [i.as_json() for i in this_page.object_list]
+        data = [i.as_json(user) for i in this_page.object_list]
 
         return JsonResponse({'result': 1, 'items': data, 'hasNext': this_page.has_next()})
 
@@ -204,7 +204,7 @@ def my_fallowings(request):
         p = Paginator(user.fallowings, 15)
         num_page = request.POST.get('page',1)
         this_page = p.get_page(num_page)
-        data = [i.as_json() for i in this_page.object_list]
+        data = [i.as_json(user) for i in this_page.object_list]
 
         return JsonResponse({'result': 1, 'items': data, 'hasNext': this_page.has_next()})
 
@@ -217,7 +217,7 @@ def my_tags(request):
         p = Paginator(user.tags, 15)
         num_page = request.POST.get('page',1)
         this_page = p.get_page(num_page)
-        data = [i.as_json() for i in this_page.object_list]
+        data = [i.as_json(user) for i in this_page.object_list]
 
         return JsonResponse({'result': 1, 'items': data, 'hasNext': this_page.has_next()})
 
@@ -231,7 +231,7 @@ def my_draft_posts(request):
         p = Paginator(user.dposts, 15)
         num_page = request.POST.get('page',1)
         this_page = p.get_page(num_page)
-        data = [i.as_json() for i in this_page.object_list]
+        data = [i.as_json(user) for i in this_page.object_list]
 
         return JsonResponse({'result': 1, 'items': data, 'hasNext': this_page.has_next()})
 
@@ -244,7 +244,7 @@ def my_pub_posts(request):
         p = Paginator(user.posts, 15)
         num_page = request.POST.get('page',1)
         this_page = p.get_page(num_page)
-        data = [i.as_json() for i in this_page.object_list]
+        data = [i.as_json(user) for i in this_page.object_list]
 
         return JsonResponse({'result': 1, 'items': data, 'hasNext': this_page.has_next()})
 

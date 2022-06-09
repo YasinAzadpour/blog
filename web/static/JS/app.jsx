@@ -21,7 +21,7 @@ const getMyInfo = (ctext) => {
       }
     },
     error: () => {
-      showMsg("An unknown nerwoek error has occurred");
+      showMsg("An unknown network error has occurred");
       setTimeout(getMyInfo, 10000);
     },
   });
@@ -126,7 +126,7 @@ const genColor = (id) => {
 };
 
 const Loading = () => {
-  return <p className="mt-8 text-center text-indigo-600">Loading...</p>;
+  return <p className="mt-8 text-center text-indigo-600 loading">Loading...</p>;
 };
 
 const Auth = ({ page }) => {
@@ -590,11 +590,11 @@ const Post = ({ post = {}, loading }) => {
           if (r.result) {
             setIsBookmark(!isBookmark);
           } else {
-            showMsg("Server error");
+            showMsg("An unknown error has occurred");
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
         },
       });
     } else {
@@ -676,7 +676,7 @@ const Post = ({ post = {}, loading }) => {
         <div className="tags flex mt-3 items-center justify-between">
           <div className="relative flex items-center whitespace-pre w-9/12 overflow-hidden  ">
             {[1, 2, 3, 4].map((i) => (
-              <Tag loading={true} id={i} />
+              <Tag loading={true} key={i} />
             ))}
           </div>
         </div>
@@ -684,7 +684,7 @@ const Post = ({ post = {}, loading }) => {
         <div className="tags flex mt-3 items-center justify-between">
           <div className="relative flex items-center whitespace-pre w-9/12 overflow-hidden  after:bg-gradient-to-l after:from-white after:to-transparent after:right-0 after:absolute after:h-full after:w-6">
             {post.tags.map((tag) => (
-              <Tag tag={tag} id={tag.id} />
+              <Tag tag={tag} key={tag.id} />
             ))}
           </div>
 
@@ -742,7 +742,7 @@ const Home = ({}) => {
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
           setTimeout(getRec, 10000);
         },
       });
@@ -767,7 +767,7 @@ const Home = ({}) => {
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
           setTimeout(getLatests, 10000);
         },
       });
@@ -792,7 +792,7 @@ const Home = ({}) => {
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
           setTimeout(getFallowings, 10000);
         },
       });
@@ -817,7 +817,7 @@ const Home = ({}) => {
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
           setTimeout(getFallowingUsers, 10000);
         },
       });
@@ -842,7 +842,7 @@ const Home = ({}) => {
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
           setTimeout(getTags, 10000);
         },
       });
@@ -862,26 +862,17 @@ const Home = ({}) => {
   }, [data]);
 
   useEffect(() => {
-    const lastChild = document.querySelector(".postsContainer > *:last-child");
+    const lastChild = document.querySelector(".postsContainer .loading");
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           if (state == "rec") {
-            // setRec({...rec,['loading']: true});
-            // if (!rec.loading){
             getRec();
-            // }
           } else if (state == "latests") {
-            // setLatests({...latests,['loading']: true});
-            // if (!latests.loading){
             getLatests();
-            // }
           } else if (state == "fallowings") {
-            // setFallowings({...fallowings,['loading']: true});
-            // if (!fallowings.loading){
             getFallowings();
-            // }
           }
         }
       });
@@ -892,15 +883,12 @@ const Home = ({}) => {
   }, [rec, fallowings, latests]);
 
   useEffect(() => {
-    const lastChild = document.querySelector(".tagsContainer > *:last-child");
+    const lastChild = document.querySelector("#tagsContainer .loading");
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          // setTags({...tags,['loading']: true})
-          // if (!tags.loading){
           getTags();
-          // }
         }
       });
     });
@@ -911,17 +899,14 @@ const Home = ({}) => {
 
   useEffect(() => {
     const lastChild = document.querySelector(
-      ".fallowingUsersContainer > *:last-child"
+      "#fallowingUsersContainer .loading"
     );
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          // setFallowingUsers({...fallowingUsers,['loading']: true});
-          // if (!fallowingUsers.loading){
           getFallowingUsers();
         }
-        // }
       });
     });
     if (lastChild) {
@@ -934,24 +919,23 @@ const Home = ({}) => {
       <main className="mt-16 mb-16 sm:m-0 sm:ml-16 flex items-center justify-center">
         <section className="p-6 max-w-6xl w-full">
           {data.me.id ? (
-            <div className="flex items-center justify-start">
-              <span className="text-gray-600 whitespace-pre">Tags:</span>
-              <div className="overflow-auto ml-3 flex items-center whitespace-pre tagsContainer">
+              <div id="tagsContainer" className="overflow-auto ml-3 flex items-center whitespace-pre">
                 {tags.isReady
-                  ? tags.items.map((t) => <Tag tag={t} id={t.id} />)
-                  : [1, 2, 3].map((i) => <Tag loading={true} id={i} />)}
+                  ? tags.items.map((i) => <Tag tag={i} key={i.id} />)
+                  : [1, 2, 3].map((i) => <Tag loading={true} key={i} />)}
+                {tags.hasNext && tags.isReady ? <span className="mx-4 text-xl loading">...</span> : ""}
               </div>
-            </div>
           ) : (
             ""
           )}
           {data.me.id ? (
-            <div className="py-2 my-4 flex overflow-auto fallowingUsersContainer">
+            <div id="fallowingUsersContainer" className="py-2 my-4 flex overflow-auto">
               {fallowingUsers.isReady
-                ? fallowingUsers.items.map((u) => (
-                    <Fallowing user={u} id={u.id} />
+                ? fallowingUsers.items.map((i) => (
+                    <Fallowing user={i} key={i.id} />
                   ))
-                : [1, 2, 3].map((i) => <Fallowing loading={true} id={i} />)}
+                : [1, 2, 3].map((i) => <Fallowing loading={true} key={i} />)}
+                {fallowingUsers.hasNext && fallowingUsers.isReady ? <div className="h-12 w-12 text-xl loading px-4"><span className="m-auto">...</span></div> : ""}
             </div>
           ) : (
             ""
@@ -1018,11 +1002,11 @@ const Home = ({}) => {
           )}
           <div className="postsContainer">
             {state == "rec" &&
-              rec.items.map((p) => <Post post={p} id={p.id} />)}
+              rec.items.map((i) => <Post post={i} key={i.id} />)}
             {state == "fallowings" &&
-              fallowings.items.map((p) => <Post post={p} id={p.id} />)}
+              fallowings.items.map((i) => <Post post={i} key={i.id} />)}
             {state == "latests" &&
-              latests.items.map((p) => <Post post={p} id={p.id} />)}
+              latests.items.map((i) => <Post post={i} key={i.id} />)}
 
             {((state == "rec" && rec.hasNext && rec.isReady) ||
               (state == "fallowings" &&
@@ -1034,7 +1018,7 @@ const Home = ({}) => {
             {((state == "rec" && !rec.isReady) ||
               (state == "fallowings" && !fallowings.isReady) ||
               (state == "latests" && !latests.isReady)) &&
-              [1, 2, 3, 4, 5].map((i) => <Post loading={true} id={i} />)}
+              [1, 2, 3, 4, 5].map((i) => <Post loading={true} key={i} />)}
           </div>
         </section>
       </main>
@@ -1057,11 +1041,11 @@ const TagView = ({}) => {
         if (r.result) {
           setTag({ ...r.tag, ["isReady"]: true });
         } else {
-          showMsg("Server error");
+          showMsg("An unknown error has occurred");
         }
       },
       error: () => {
-        showMsg("An unknown nerwoek error has occurred");
+        showMsg("An unknown network error has occurred");
       },
     });
   };
@@ -1080,18 +1064,18 @@ const TagView = ({}) => {
             r["isReady"] = true;
             setPosts(r);
           } else {
-            showMsg("Server error");
+            showMsg("An unknown error has occurred");
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
           setTimeout(getPosts, 10000);
         },
       });
     }
   };
   useEffect(() => {
-    const lastChild = document.querySelector(".postsContainer > *:last-child");
+    const lastChild = document.querySelector("#postsContainer .loading");
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -1121,11 +1105,11 @@ const TagView = ({}) => {
           if (r.result) {
             setTag({ ...tag, ["fallowed"]: !tag.fallowed });
           } else {
-            showMsg("Server error");
+            showMsg("An unknown error has occurred");
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
         },
       });
     } else {
@@ -1194,10 +1178,10 @@ const TagView = ({}) => {
             </div>
           )}
 
-          <div className="postsContainer">
+          <div id="postsContainer">
             {posts.isReady
-              ? posts.items.map((p) => <Post post={p} id={p.id} />)
-              : [1, 2, 3, 4, 5].map((i) => <Post loading={true} id={i} />)}
+              ? posts.items.map((p) => <Post post={p} key={p.id} />)
+              : [1, 2, 3, 4, 5].map((i) => <Post loading={true} key={i} />)}
             {posts.hasNext && posts.isReady ? <Loading /> : ""}
           </div>
         </section>
@@ -1220,11 +1204,11 @@ const PeopleItem = ({ user = {}, inSearch, loading }) => {
           if (r.result) {
             setFallowed(!fallowed);
           } else {
-            showMsg("Server error");
+            showMsg("An unknown error has occurred");
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
         },
       });
     } else {
@@ -1294,11 +1278,11 @@ const TagItem = ({ tag = {}, loading }) => {
           if (r.result) {
             setFallowed(!fallowed);
           } else {
-            showMsg("Server error");
+            showMsg("An unknown error has occurred");
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
         },
       });
     } else {
@@ -1389,7 +1373,7 @@ const SearchView = ({}) => {
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
           setTimeout(getTopPosts, 10000);
         },
       });
@@ -1416,7 +1400,7 @@ const SearchView = ({}) => {
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
           setTimeout(getTopUsers, 10000);
         },
       });
@@ -1442,7 +1426,7 @@ const SearchView = ({}) => {
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
           setTimeout(getTopTags, 10000);
         },
       });
@@ -1475,11 +1459,11 @@ const SearchView = ({}) => {
                   setPosts(r);
                 }
               } else {
-                showMsg("Server error");
+                showMsg("An unknown error has occurred");
               }
             },
             error: () => {
-              showMsg("An unknown nerwoek error has occurred");
+              showMsg("An unknown network error has occurred");
               setTimeout(search, 10000);
             },
           });
@@ -1498,19 +1482,13 @@ const SearchView = ({}) => {
   }, [searchValue, state]);
 
   useEffect(() => {
-    const lastChild = document.querySelector(".searchContainer > *:last-child");
+    const lastChild = document.querySelector("#searchContainer .loading");
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           if (searchValue.replace(/\s+/g, "").length) {
-            if (
-              (state == "tags" && tags.hasNext) ||
-              (state == "users" && users.hasNext) ||
-              (state == "posts" && posts.hasNext)
-            ) {
               search();
-            }
           } else {
             if (state == "posts") {
               getTopPosts();
@@ -1584,58 +1562,45 @@ const SearchView = ({}) => {
                 Tags
               </button>
             </div>
-            <div className="searchContainer">
+            <div id="searchContainer">
               {/* {items()} */}
               {searchValue.replace(/\s+/g, "")
                 ? state == "posts"
                   ? posts.isReady
-                    ? posts.items.map((i) => <Post post={i} id={i.id} />)
-                    : [1, 2, 3, 4, 5].map((i) => <Post loading={true} id={i} />)
+                    ? posts.items.map((i) => <Post post={i} key={i.id} />)
+                    : [1, 2, 3, 4, 5].map((i) => <Post loading={true} key={i} />)
                   : state == "users"
                   ? users.isReady
                     ? users.items.map((i) => (
-                        <PeopleItem user={i} inSearch={true} id={i.id} />
+                        <PeopleItem user={i} inSearch={true} key={i.id} />
                       ))
                     : [1, 2, 3, 4, 5].map((i) => (
-                        <PeopleItem loading={true} id={i} />
+                        <PeopleItem loading={true} key={i} />
                       ))
                   : state == "tags"
                   ? tags.isReady
-                    ? tags.items.map((i) => <TagItem tag={i} id={i.id} />)
+                    ? tags.items.map((i) => <TagItem tag={i} key={i.id} />)
                     : [1, 2, 3, 4, 5].map((i) => (
-                        <TagItem loading={true} id={i} />
+                        <TagItem loading={true} key={i} />
                       ))
                   : ""
                 : state == "posts"
                 ? topPosts.isReady
-                  ? topPosts.items.map((i) => <Post post={i} id={i.id} />)
-                  : [1, 2, 3, 4, 5].map((i) => <Post loading={true} id={i} />)
+                  ? topPosts.items.map((i) => <Post post={i} key={i.id} />)
+                  : [1, 2, 3, 4, 5].map((i) => <Post loading={true} key={i} />)
                 : state == "users"
                 ? topUsers.isReady
-                  ? topUsers.items.map((i) => <PeopleItem user={i} id={i.id} />)
+                  ? topUsers.items.map((i) => <PeopleItem user={i} key={i.id} />)
                   : [1, 2, 3, 4, 5].map((i) => (
-                      <PeopleItem loading={true} id={i} />
+                      <PeopleItem loading={true} key={i} />
                     ))
                 : state == "tags"
                 ? topTags.isReady
-                  ? topTags.items.map((i) => <TagItem tag={i} id={i.id} />)
+                  ? topTags.items.map((i) => <TagItem tag={i} key={i.id} />)
                   : [1, 2, 3, 4, 5].map((i) => (
-                      <TagItem loading={true} id={i} />
+                      <TagItem loading={true} key={i} />
                     ))
                 : ""}
-              {/* {state == "posts" &&
-                ( ? posts : topPosts).items.map(
-                  (i) => <Post post={i} id={i.id} />
-                )}
-              {state == "users" &&
-                (searchValue.replace(/\s+/g, "") ? users : topUsers).items.map(
-                  (i) => <PeopleItem user={i} id={i.id} />
-                )}
-              {state == "tags" &&
-                (searchValue.replace(/\s+/g, "") ? tags : topTags).items.map(
-                  (i) => <TagItem tag={i} id={i.id} />
-                )} */}
-
               {((state == "posts" && posts.hasNext && posts.isReady) ||
                 (state == "tags" && tags.hasNext && tags.isReady) ||
                 (state == "users" && users.hasNext && users.isReady) ||
@@ -1644,16 +1609,7 @@ const SearchView = ({}) => {
                 (state == "users" && topUsers.hasNext && topUsers.isReady)) && (
                 <Loading />
               )}
-              {/* {state == "posts" &&
-                (!posts.isReady || !topPosts.isReady) &&
-                [1, 2, 3, 4, 5].map((i) => <Post loading={true} id={i} />)}
-              {state == "users" &&
-                (!users.isReady || !topUsers.isReady) &&
-                [1, 2, 3, 4, 5].map((i) => (
-                  <PeopleItem loading={true} id={i} />
-                ))}
-              {((state == "tags" && !tags.isReady) || !topTags.isReady) &&
-                [1, 2, 3, 4, 5].map((i) => <TagItem loading={true} id={i} />)} */}
+       
             </div>
           </div>
         </section>
@@ -1681,11 +1637,11 @@ const BookmarkView = ({}) => {
             r["isReady"] = true;
             setBookmarks(r);
           } else {
-            showMsg("Server error");
+            showMsg("An unknown error has occurred");
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
           setTimeout(getBookamrks, 10000);
         },
       });
@@ -1694,7 +1650,7 @@ const BookmarkView = ({}) => {
 
   useEffect(() => {
     const lastChild = document.querySelector(
-      ".bookmarksContainer > *:last-child"
+      "#bookmarksContainer .loading"
     );
 
     const observer = new IntersectionObserver((entries) => {
@@ -1722,19 +1678,19 @@ const BookmarkView = ({}) => {
             Bookmarks
           </h1>
           {bookmarks.isReady ? (
-            <div className="bookmarksContainer">
+            <div id="bookmarksContainer">
               {bookmarks.items.map((p) => (
-                <Post post={p} id={p.id} />
+                <Post post={p} key={p.id} />
               ))}
+              {bookmarks.hasNext && bookmarks.isReady ? <Loading /> : ""}
             </div>
           ) : (
             <div>
               {[1, 2, 3, 4, 5].map((i) => (
-                <Post loading={true} id={i} />
+                <Post loading={true} key={i} />
               ))}
             </div>
           )}
-          {bookmarks.hasNext && bookmarks.isReady ? <Loading /> : ""}
         </section>
       </main>
     </main>
@@ -1772,11 +1728,11 @@ const WriteView = ({}) => {
             r["isReady"] = true;
             setTopTags(r);
           } else {
-            showMsg("Server error");
+            showMsg("An unknown error has occurred");
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
           setTimeout(getTopTag, 10000);
         },
       });
@@ -1795,11 +1751,11 @@ const WriteView = ({}) => {
             ["csrfmiddlewaretoken"]: data.csrfmiddlewaretoken,
           });
         } else {
-          showMsg("Server error");
+          showMsg("An unknown error has occurred");
         }
       },
       error: () => {
-        showMsg("An unknown nerwoek error has occurred");
+        showMsg("An unknown network error has occurred");
         setTimeout(getPost, 10000);
       },
     });
@@ -1836,7 +1792,7 @@ const WriteView = ({}) => {
         }
       },
       error: () => {
-        showMsg("An unknown nerwoek error has occurred");
+        showMsg("An unknown network error has occurred");
       },
     });
   };
@@ -1881,7 +1837,7 @@ const WriteView = ({}) => {
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
         },
       });
     } else {
@@ -1908,24 +1864,23 @@ const WriteView = ({}) => {
         }
       },
       error: () => {
-        showMsg("An unknown nerwoek error has occurred");
+        showMsg("An unknown network error has occurred");
       },
     });
   };
   useEffect(() => {
     const lastChild = document.querySelector(
-      ".topTagsContainer > *:last-child"
+      "#tagsContainer .loading"
     );
+    console.log(lastChild)
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           if (srchTag.replace(/\W+/g, "").length && crntTags.hasNext) {
-            searchTag({ target: {} }, true);
+            searchTag({ target: {value: srchTag} }, true);
           } else {
-            if (topTags.hasNext) {
-              getTopTags();
-            }
+            getTopTags();
           }
         }
       });
@@ -1933,7 +1888,7 @@ const WriteView = ({}) => {
     if (lastChild) {
       observer.observe(lastChild);
     }
-  }, [srchTag]);
+  }, [srchTag,topTags,crntTags]);
 
   return (
     <main>
@@ -2000,7 +1955,7 @@ const WriteView = ({}) => {
 
               <div className="tags flex mt-3 items-center justify-between">
                 <div className="relative flex items-center whitespace-pre w-[calc(100%-1rem)] overflow-hidden  after:bg-gradient-to-l after:from-white after:to-transparent after:right-0 after:absolute after:h-full after:w-6">
-                  {post.tags && post.tags.map((i) => <Tag tag={i} id={i.id} />)}
+                  {post.tags && post.tags.map((i) => <Tag tag={i} key={i.id} />)}
                 </div>
               </div>
 
@@ -2045,9 +2000,9 @@ const WriteView = ({}) => {
                   {post.tags &&
                     post.tags.map((i) => (
                       <span className="p-1 border-b-[1px] border-gray-300 mr-2">
-                        <h1 className={`text-${genColor(i.id)}`}>
+                        <span className={`text-${genColor(i.id)}`}>
                           #<span className="ml-1 text-gray-700">{i.name}</span>
-                        </h1>
+                        </span>
                         <i
                           className="bi bi-x p-1 cursor-pointer"
                           onClick={() => {
@@ -2079,7 +2034,7 @@ const WriteView = ({}) => {
                   ) : (
                     ""
                   )}
-                  <ul className="topTagsContainer rounded-xl absolute top-[2rem] left-0 bg-gray-100 shadow-xl h-64 overflow-auto opacity-0 pointer-events-none group-focus-within:opacity-100 group-focus-within:pointer-events-auto w-64">
+                  <ul id="tagsContainer" className=" rounded-xl absolute top-[2rem] left-0 bg-gray-100 shadow-xl h-64 overflow-auto opacity-0 pointer-events-none group-focus-within:opacity-100 group-focus-within:pointer-events-auto w-64">
                     {(
                       avTags() ||
                       (!srchTag.includes(" ")
@@ -2121,6 +2076,7 @@ const WriteView = ({}) => {
                         </button>
                       </li>
                     ))}
+                    {(topTags.hasNext&&topTags.isReady)||(crntTags.hasNext&&crntTags.isReady)?<div className="w-full py-3 loading text-xl text-center">...</div>:""}
                   </ul>
                 </div>
               </div>
@@ -2188,7 +2144,7 @@ const MeView = ({}) => {
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
           setTimeout(getPosts, 10000);
         },
       });
@@ -2214,7 +2170,7 @@ const MeView = ({}) => {
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
           setTimeout(getDposts, 10000);
         },
       });
@@ -2239,7 +2195,7 @@ const MeView = ({}) => {
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
           setTimeout(getFallowers, 10000);
         },
       });
@@ -2259,13 +2215,14 @@ const MeView = ({}) => {
           if (r.result) {
             r["items"] = fallowings.items.concat(r.items);
             r["isReady"] = true;
+            console.log(r)
             setFallowings(r);
           } else {
             showMsg("An unexpected error occurred");
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
           setTimeout(getFallowings, 10000);
         },
       });
@@ -2290,7 +2247,7 @@ const MeView = ({}) => {
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
           setTimeout(getTags, 10000);
         },
       });
@@ -2324,7 +2281,7 @@ const MeView = ({}) => {
 
     useEffect(() => {
       const lastChild = document.querySelector(
-        ".postsContainer > *:last-child"
+        "#postsContainer .loading"
       );
 
       const observer = new IntersectionObserver((entries) => {
@@ -2365,32 +2322,32 @@ const MeView = ({}) => {
             <div className="rounded-full bg-gray-200 w-20 h-1 sm:h-20 sm:w-1"></div>
           </button>
 
-          <div className="overflow-auto h-full sm:ml-4 px-2 pb-2 itemsContainer">
+          <div id="itemsContainer" className="overflow-auto h-full sm:ml-4 px-2 pb-2">
             {sideName == "tags" && tags.isReady
-              ? tags.items.map((item) => <TagItem tag={item} id={item.id} />)
+              ? tags.items.map((item) => <TagItem tag={item} key={item.id} />)
               : sideName == "tags"
               ? [1, 2, 3, 4, 5, , 6, 7, 8, 9].map((item) => (
-                  <TagItem loading={true} id={item.id} />
+                  <TagItem loading={true} key={item.id} />
                 ))
               : ""}
 
             {sideName == "fallowers" && fallowers.isReady
               ? fallowers.items.map((item) => (
-                  <PeopleItem user={item} id={item.id} />
+                  <PeopleItem user={item} key={item.id} />
                 ))
               : sideName == "fallowers"
               ? [1, 2, 3, 4, 5, , 6, 7, 8, 9].map((item) => (
-                  <PeopleItem loading={true} id={item.id} />
+                  <PeopleItem loading={true} key={item.id} />
                 ))
               : ""}
 
             {sideName == "fallowings" && fallowings.isReady
               ? fallowings.items.map((item) => (
-                  <PeopleItem user={item} id={item.id} />
+                  <PeopleItem user={item} key={item.id} />
                 ))
               : sideName == "fallowings"
               ? [1, 2, 3, 4, 5, , 6, 7, 8, 9].map((item) => (
-                  <PeopleItem loading={true} id={item.id} />
+                  <PeopleItem loading={true} key={item} />
                 ))
               : ""}
 
@@ -2412,7 +2369,7 @@ const MeView = ({}) => {
   };
 
   useEffect(() => {
-    const lastChild = document.querySelector(".postsContainer > *:last-child");
+    const lastChild = document.querySelector("#postsContainer .loading");
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -2539,17 +2496,17 @@ const MeView = ({}) => {
               Publications
             </button>
           </div>
-          <div className="postsContainer">
+          <div id="postsContainer">
             {state == "pubs" &&
-              posts.items.map((i) => <Post post={i} id={i.id} />)}
+              posts.items.map((i) => <Post post={i} key={i.id} />)}
             {state == "drafts" &&
-              dposts.items.map((i) => <Post post={i} id={i.id} />)}
+              dposts.items.map((i) => <Post post={i} key={i.id} />)}
             {(state == "drafts" && !dposts.isReady) ||
             (state == "pubs" && !posts.isReady)
-              ? [1, 2, 3, 4, 5].map((i) => <Post loading={true} id={i} />)
+              ? [1, 2, 3, 4, 5].map((i) => <Post loading={true} key={i} />)
               : ""}
-            {(state == "drafts" && !dposts.isReady && dposts.hasNext) ||
-            (state == "pubs" && !posts.isReady && posts.hasNext) ? (
+            {(state == "drafts" && dposts.isReady && dposts.hasNext) ||
+            (state == "pubs" && posts.isReady && posts.hasNext) ? (
               <Loading />
             ) : (
               ""
@@ -2576,11 +2533,11 @@ const PeopleView = ({}) => {
         if (r.result) {
           setUser(r.user);
         } else {
-          showMsg("Server error");
+          showMsg("An unknown error has occurred");
         }
       },
       error: () => {
-        showMsg("An unknown nerwoek error has occurred");
+        showMsg("An unknown network error has occurred");
         setTimeout(getUser, 10000);
       },
     });
@@ -2601,18 +2558,18 @@ const PeopleView = ({}) => {
             r["isReady"] = true;
             setPosts(r);
           } else {
-            showMsg("Server error");
+            showMsg("An unknown error has occurred");
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
           setTimeout(getPosts, 10000);
         },
       });
     }
   };
   useEffect(() => {
-    const lastChild = document.querySelector(".postsContainer > *:last-child");
+    const lastChild = document.querySelector("#postsContainer .loading");
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -2642,11 +2599,11 @@ const PeopleView = ({}) => {
           if (r.result) {
             setUser({ ...user, ["fallowed"]: !user.fallowed });
           } else {
-            showMsg("Server error");
+            showMsg("An unknown error has occurred");
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
         },
       });
     } else {
@@ -2717,10 +2674,10 @@ const PeopleView = ({}) => {
               Home
             </button>
           </div>
-          <div className="postsContainer">
+          <div id="postsContainer">
             {posts.isReady
-              ? posts.items.map((i) => <Post post={i} id={i.id} />)
-              : [1, 2, 3, 4, 5].map((i) => <Post loading={true} id={i} />)}
+              ? posts.items.map((i) => <Post post={i} key={i.id} />)
+              : [1, 2, 3, 4, 5].map((i) => <Post loading={true} key={i} />)}
             {posts.hasNext && posts.isReady ? <Loading /> : ""}
           </div>
         </section>
@@ -2758,7 +2715,7 @@ const SettingsView = ({}) => {
         },
         error: () => {
           setShowSide(null);
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
         },
       });
     };
@@ -2843,11 +2800,11 @@ const SettingsView = ({}) => {
             setEditField(null);
             setFormData({});
           } else {
-            showMsg(r.profile || "Server error");
+            showMsg(r.profile || "An unknown error has occurred");
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
         },
       });
     } else {
@@ -2871,12 +2828,12 @@ const SettingsView = ({}) => {
         if (r.result) {
           showMsg("Successfully killed");
         } else {
-          showMsg("Server error");
+          showMsg("An unknown error has occurred");
         }
       },
       error: () => {
         setShowSide(null);
-        showMsg("An unknown nerwoek error has occurred");
+        showMsg("An unknown network error has occurred");
       },
     });
   };
@@ -2896,7 +2853,7 @@ const SettingsView = ({}) => {
       },
       error: () => {
         setShowSide(null);
-        showMsg("An unknown nerwoek error has occurred");
+        showMsg("An unknown network error has occurred");
       },
     });
   };
@@ -2933,7 +2890,7 @@ const SettingsView = ({}) => {
       error: () => {
         setShowSide(null);
         setFormData({});
-        showMsg("An unknown nerwoek error has occurred");
+        showMsg("An unknown network error has occurred");
       },
     });
   };
@@ -2961,7 +2918,7 @@ const SettingsView = ({}) => {
         setIsLoading(false);
         setEditField(null);
         setFormData({});
-        showMsg("An unknown nerwoek error has occurred");
+        showMsg("An unknown network error has occurred");
       },
     });
   };
@@ -2990,7 +2947,6 @@ const SettingsView = ({}) => {
                 <input
                   name="profile"
                   type="file"
-                  name="profile"
                   onChange={manageForm}
                   className="w-full h-full absolute cursor-pointer opacity-0 z-[2]"
                   title="Click to change profile image"
@@ -3603,17 +3559,16 @@ const PostDetail = ({}) => {
         if (r.result) {
           setPost({ ...r.post, ["isReady"]: true });
         } else {
-          showMsg("Server error");
+          showMsg("An unknown error has occurred");
         }
       },
       error: () => {
-        showMsg("An unknown nerwoek error has occurred");
+        showMsg("An unknown network error has occurred");
         setTimeout(getPost, 10000);
       },
     });
   };
   const getPosts = (username = url.username) => {
-    if (posts.hasNext) {
       $.ajax({
         method: "POST",
         url: `/api/posts/@${username}`,
@@ -3627,15 +3582,14 @@ const PostDetail = ({}) => {
             r["isReady"] = true;
             setPosts(r);
           } else {
-            showMsg("Server error");
+            showMsg("An unknown error has occurred");
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
           setTimeout(getPosts, 10000);
         },
       });
-    }
   };
 
   useEffect(() => {
@@ -3644,7 +3598,7 @@ const PostDetail = ({}) => {
   }, [1]);
 
   useEffect(() => {
-    const lastChild = document.querySelector(".postsContainer > *:last-child");
+    const lastChild = document.querySelector("#postsContainer .loading");
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -3729,7 +3683,7 @@ const PostDetail = ({}) => {
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
         },
       });
     } else {
@@ -3749,7 +3703,7 @@ const PostDetail = ({}) => {
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
         },
       });
     } else {
@@ -3773,7 +3727,7 @@ const PostDetail = ({}) => {
           }
         },
         error: () => {
-          showMsg("An unknown nerwoek error has occurred");
+          showMsg("An unknown network error has occurred");
         },
       });
     } else {
@@ -3924,7 +3878,7 @@ const PostDetail = ({}) => {
               <div className="tags flex mt-3 items-center justify-between">
                 <div className="relative flex items-center whitespace-pre w-[calc(100%-1rem)] overflow-hidden  after:bg-gradient-to-l after:from-white after:to-transparent after:right-0 after:absolute after:h-full after:w-6">
                   {post.tags.map((i) => (
-                    <Tag tag={i} id={i.id} />
+                    <Tag tag={i} key={i.id} />
                   ))}
                 </div>
                 <button
@@ -4007,7 +3961,7 @@ const PostDetail = ({}) => {
               <div className="tags flex mt-3 items-center justify-between">
                 <div className="relative flex items-center whitespace-pre w-[calc(100%-1rem)] overflow-hidden  after:bg-gradient-to-l after:from-white after:to-transparent after:right-0 after:absolute after:h-full after:w-6">
                   {[1, 2, 3, 4].map((i) => (
-                    <Tag loading={true} id={i} />
+                    <Tag loading={true} key={i} />
                   ))}
                 </div>
               </div>
@@ -4079,11 +4033,11 @@ const PostDetail = ({}) => {
               </div>
             )}
 
-            <div className="postsContainer">
+            <div id="postsContainer">
               {posts.isReady
-                ? posts.items.map((p) => <Post post={p} id={p.id} />)
-                : [1, 2, 3, 4, 5].map((i) => <Post loading={true} id={i} />)}
-              {!posts.isReady && posts.hasNext ? <Loading /> : ""}
+                ? posts.items.map((p) => <Post post={p} key={p.id} />)
+                : [1, 2, 3, 4, 5].map((i) => <Post loading={true} key={i} />)}
+              {posts.isReady && posts.hasNext ? <Loading /> : ""}
             </div>
           </div>
         </section>
