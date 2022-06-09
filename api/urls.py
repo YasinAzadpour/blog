@@ -28,8 +28,8 @@ urlpatterns = [
     path('fallowings', fallowings_posts, name='fallowings_posts'),
 
     # for all users 
-    path('accounts/sign-in', sign_in, name='sign_in'),
-    path('accounts/sign-up', sign_up, name='sign_up'),
+    path('accounts/login', sign_in, name='sign_in'),
+    path('accounts/join', sign_up, name='sign_up'),
     path('posts/@<username>', people_posts, name='people_posts'),
     path('posts/<name>', tag_posts, name='tag_posts'),
     path('t/<name>', tag, name='tag'),

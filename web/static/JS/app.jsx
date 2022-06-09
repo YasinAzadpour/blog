@@ -133,19 +133,19 @@ const Auth = ({ page }) => {
   const [data, setData] = useContext(Context);
 
   const about = {
-    "Sign-in": {
-      url: "/accounts/sign-in",
+    "login": {
+      url: "/accounts/login",
       help: "create new account",
-      helpurl: "/accounts/sign-up",
+      helpurl: "/accounts/join",
       about: "",
-      apiurl: "/api/accounts/sign-in",
+      apiurl: "/api/accounts/login",
     },
-    "Sign-up": {
-      url: "/accounts/sign-up",
+    "join": {
+      url: "/accounts/join",
       help: "already have account",
-      helpurl: "/accounts/sign-in",
+      helpurl: "/accounts/login",
       about: "",
-      apiurl: "/api/accounts/sign-up",
+      apiurl: "/api/accounts/join",
     },
   };
   const [formData, setFormData] = useState({
@@ -165,21 +165,21 @@ const Auth = ({ page }) => {
     setTitle(e);
     setIsLoading(false);
     setMessages({});
-    if (status == "Sign-up") {
-      setStatus("Sign-in");
-    } else if (status == "Sign-in") {
-      setStatus("Sign-up");
+    if (status == "join") {
+      setStatus("login");
+    } else if (status == "login") {
+      setStatus("join");
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setMessages({});
-    if (status === "Sign-up") {
+    if (status === "join") {
       setIsLoading(true);
       $.ajax({
         method: "POST",
-        url: about["Sign-up"]["apiurl"],
+        url: about["join"]["apiurl"],
         data: formData,
         success: (r) => {
           setIsLoading(false);
@@ -189,11 +189,11 @@ const Auth = ({ page }) => {
           setMessages(r);
         },
       });
-    } else if (status === "Sign-in") {
+    } else if (status === "login") {
       setIsLoading(true);
       $.ajax({
         method: "POST",
-        url: about["Sign-in"]["apiurl"],
+        url: about["login"]["apiurl"],
         data: formData,
         success: (r) => {
           setIsLoading(false);
@@ -215,7 +215,7 @@ const Auth = ({ page }) => {
         onSubmit={handleSubmit}
       >
         <h1 className="text-2xl font-medium my-4">
-          {status.replace(/\W+/g, " ")}
+          {status[0].toUpperCase()+status.slice(1)}
         </h1>
         {about[status]["about"] && (
           <p className="p2-1 pb-2 text-slate-600">{about[status]["about"]}</p>
@@ -250,21 +250,21 @@ const Auth = ({ page }) => {
             type="password"
             name="password"
             placeholder="Password"
-            pattern={status === "Sign-up" ? ".{8,}" : ".*"}
+            pattern={status === "join" ? ".{8,}" : ".*"}
             onChange={manageData}
             required={true}
           />
           <span
             className={`text-sm ${
-              status == "Sign-up" ? "text-red-500" : "text-white"
+              status == "join" ? "text-red-500" : "text-white"
             } pt-1 ${messages.password2 ? "opacity-100" : "opacity-0"}`}
           >
             {messages.password2 ||
-              (status == "Sign-up" ? "This password is too short." : "|")}
+              (status == "join" ? "This password is too short." : "|")}
           </span>
         </div>
 
-        {status == "Sign-up" ? (
+        {status == "join" ? (
           <div className="w-full my-1 text-lg flex flex-col">
             <input
               className="border-gray-300 border-b-2 py-1 placeholder:text-gray-600 w-full focus:border-gray-500 focus:placeholder:text-gray-700"
@@ -292,10 +292,10 @@ const Auth = ({ page }) => {
             isLoading ? "opacity-50 cursor-wait" : ""
           }`}
         >
-          {status.replace(/\W+/g, "") + (isLoading ? "..." : "")}
+          {status[0].toUpperCase()+status.slice(1) + (isLoading ? "..." : "")}
         </button>
         <Link
-          name={status.replace(/\W+/g, " ")}
+          name={status}
           onClick={hanldeClickHelpBtn}
           to={about[status]["helpurl"]}
           className={`w-full text-center pt-4 text-indigo-600 hover:text-indigo-500 cursor-pointer`}
@@ -458,7 +458,7 @@ const Navbar = ({ state, loading }) => {
         <Link
           name="Sign in"
           onClick={setTitle}
-          to="/accounts/sign-in"
+          to="/accounts/login"
           tooltip="Join us"
           className={`px-4 m-2 text-2xl hidden sm:flex  items-center justify-center cursor-pointe sm:after:whitespace-pre sm:after:absolute sm:after:left-[100%] sm:after:py-1 sm:after:px-2 sm:after:bg-gray-900 sm:after:rounded-lg sm:after:text-base sm:after:flex sm:after:items-center sm:after:justify-center sm:after:border-[1px] sm:after:border-gray-700 sm:after:text-white sm:after:opacity-0 sm:after:-translate-y-3 hover:sm:after:translate-y-0 hover:sm:after:opacity-100 hover:sm:after:transition-all sm:after:transition-none after:pointer-events-none sm:after:content-[attr(tooltip)]`}
         >
@@ -496,7 +496,7 @@ const Header = ({ loading, state }) => {
         <Link
           name="Sign in"
           onClick={setTitle}
-          to="/accounts/sign-in"
+          to="/accounts/login"
           className="block px-8 py-2 bg-gray-900 text-white rounded-full mx-4 cursor-pointer active:scale-[0.98] active:opacity-90 transition-all"
         >
           Join
