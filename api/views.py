@@ -11,7 +11,7 @@ from django.core.paginator import Paginator
 from django.http import Http404
 from django.http.response import JsonResponse
 from django.middleware import csrf
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 from PIL import Image
 from posts.forms import CommentForm, ImageForm, PostForm
 from posts.models import Post, Tag
@@ -266,7 +266,11 @@ def tag(request, name):
     try:
         user = request.user if request.user.is_authenticated else None
         tag = Tag.objects.get(name=name)
-        return JsonResponse({'result': 1, 'tag': tag.as_json(user)})
+        res = {}
+        res['me'] = user.as_json() if user else {}
+        res['tag'] = tag.as_json(user)
+        res['posts'] = {'items': [i.as_json(user) for i in tag.posts[:15]], 'hasNext': len(tag.posts)>=15}
+        return JsonResponse(res)
     except ObjectDoesNotExist:
         raise Http404
 
@@ -353,7 +357,11 @@ def post_detail(request, username, slug):
         user = request.user if request.user.is_authenticated else None
         other = User.objects.get(username=username)
         post = Post.objects.get(slug=slug, user=other)
-        return JsonResponse({'result': 1, 'post': post.as_json(user)})
+        res = {}
+        res['me'] = user.as_json() if user else {}
+        res['post'] = post.as_json(user)
+        res['posts'] = {'items': [i.as_json(user) for i in other.posts[:15]], 'hasNext': len(other.posts)>=15}
+        return JsonResponse(res)
     except ObjectDoesNotExist:
         raise Http404
 
@@ -466,7 +474,7 @@ def edit_post(request,id):
         if form.is_valid():
             post = form.save()
             
-        return JsonResponse(errors_to_json(form)|{'id': post.id})
+        return JsonResponse(errors_to_json(form)|{'id': post.id,'me': user.as_json()})
     except:
         return JsonResponse({'result': 0})
 
@@ -524,3 +532,64 @@ def like_post(request, username, slug):
         return JsonResponse({'result': 1})
     except:
         return JsonResponse({'result': 0})
+
+@require_GET
+def base_home(request):
+    user = request.user if request.user.is_authenticated else None
+    res = {}
+    res['rec'] = {'items': [], 'hasNext': False}
+    if user:
+        res['tags'] = {'items': [i.as_json() for i in user.tags[:15]], 'hasNext': user.tags.count()>=15}
+        res['fallowings'] = {'items': [i.as_json() for i in user.fallowings[:15]], 'hasNext': user.fallowings.count()>=15}
+        res['me'] = user.as_json()
+    return JsonResponse(res)
+
+@require_GET
+def base_search(request):
+    user = request.user if request.user.is_authenticated else None
+    res = {}
+    res['posts'] = {'items': [i.as_json(user) for i in Post.top[:15]], 'hasNext': len(Post.top)>=15}
+    res['tags'] = {'items': [i.as_json(user) for i in Tag.top[:15]], 'hasNext': len(Tag.top)>=15}
+    res['users'] = {'items': [i.as_json(user) for i in User.top[:15]], 'hasNext': len(User.top)>=15}
+    if user:
+        res['me'] = user.as_json()
+    return JsonResponse(res)
+
+@require_GET
+def base_bookmarks(request):
+    user = request.user 
+    if user.is_authenticated:
+        res = {}
+        res['bookmarks'] = {'items': [i.as_json(user) for i in user.bookmarks[:15]], 'hasNext': len(user.bookmarks)>=15}
+        res['me'] = user.as_json()
+        res['result'] = 1
+        return JsonResponse(res)
+
+    return JsonResponse({'result':0})
+
+
+@require_GET
+def base_me(request):
+    user = request.user 
+    if user.is_authenticated:
+        res = {}
+        res['posts'] = {'items': [i.as_json(user) for i in user.posts[:15]], 'hasNext': len(user.posts)>=15}
+        res['dposts'] = {'items': [i.as_json(user) for i in user.dposts[:15]], 'hasNext': len(user.dposts)>=15}
+        res['result'] = 1
+        res['me'] = user.as_json()
+        return JsonResponse(res)
+
+    return JsonResponse({'result':0})
+
+@require_GET
+def base_user(request, username):
+    try:
+        user = request.user if request.user.is_authenticated else None
+        other = User.objects.get(username=username)
+        res = {}
+        res['me'] = user.as_json() if user else {}
+        res['user'] = other.as_json(user)
+        res['posts'] = {'items': [i.as_json(user) for i in other.posts[:15]], 'hasNext': len(other.posts)>=15}
+        return JsonResponse(res)
+    except ObjectDoesNotExist:
+        raise Http404

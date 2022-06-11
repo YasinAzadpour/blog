@@ -575,7 +575,7 @@ const Fallowing = ({ user, loading }) => {
   }
 };
 
-const Post = ({ post = {}, loading, onTitle=()=>{} }) => {
+const Post = ({ post = {}, loading, onTitle = () => {} }) => {
   const [isBookmark, setIsBookmark] = useState(post.bookmark);
   const [data, setData] = useContext(Context);
 
@@ -658,7 +658,10 @@ const Post = ({ post = {}, loading, onTitle=()=>{} }) => {
           >
             <Link
               name={post.title}
-              onClick={(e)=>{setTitle(e);onTitle(post.user.username, post.slug)}}
+              onClick={(e) => {
+                setTitle(e);
+                onTitle(post.user.username, post.slug);
+              }}
               to={`/@${post.user.username}/${post.slug}`}
               className="hover:underline focus-visible:underline"
             >
@@ -727,120 +730,127 @@ const Home = ({}) => {
   const [data, setData] = useContext(Context);
 
   const getRec = () => {
-    if (rec.hasNext) {
-      $.ajax({
-        method: "POST",
-        url: "/api/rec",
-        data: {
-          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
-          page: rec.items.length / 15 + 1,
-        },
-        success: (r) => {
-          if (r.result) {
-            r["items"] = rec.items.concat(r.items);
-            r["isReady"] = true;
-            setRec(r);
-          } else {
-            showMsg("An unexpected error occurred");
-          }
-        },
-        error: () => {
-          showMsg("An unknown network error has occurred");
-          setTimeout(getRec, 10000);
-        },
-      });
-    }
+    $.ajax({
+      method: "POST",
+      url: "/api/rec",
+      data: {
+        csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+        page: rec.items.length / 15 + 1,
+      },
+      success: (r) => {
+        if (r.result) {
+          r["items"] = rec.items.concat(r.items);
+          r["isReady"] = true;
+          setRec(r);
+        } else {
+          showMsg("An unexpected error occurred");
+        }
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+        setTimeout(getRec, 10000);
+      },
+    });
   };
   const getLatests = () => {
-    if (latests.hasNext) {
-      $.ajax({
-        method: "POST",
-        url: "/api/latests",
-        data: {
-          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
-          page: latests.items.length / 15 + 1,
-        },
-        success: (r) => {
-          if (r.result) {
-            r["items"] = latests.items.concat(r.items);
-            r["isReady"] = true;
-            setLatests(r);
-          } else {
-            showMsg("An unexpected error occurred");
-          }
-        },
-        error: () => {
-          showMsg("An unknown network error has occurred");
-          setTimeout(getLatests, 10000);
-        },
-      });
-    }
+    $.ajax({
+      method: "POST",
+      url: "/api/latests",
+      data: {
+        csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+        page: latests.items.length / 15 + 1,
+      },
+      success: (r) => {
+        if (r.result) {
+          r["items"] = latests.items.concat(r.items);
+          r["isReady"] = true;
+          setLatests(r);
+        } else {
+          showMsg("An unexpected error occurred");
+        }
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+        setTimeout(getLatests, 10000);
+      },
+    });
   };
   const getFallowingUsers = () => {
-    if (fallowingUsers.hasNext) {
-      $.ajax({
-        method: "POST",
-        url: "/api/me/fallowings",
-        data: {
-          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
-          page: fallowingUsers.items.length / 15 + 1,
-        },
-        success: (r) => {
-          if (r.result) {
-            r["items"] = fallowingUsers.items.concat(r.items);
-            r["isReady"] = true;
-            setFallowingUsers(r);
-          } else {
-            showMsg("An unexpected error occurred");
-          }
-        },
-        error: () => {
-          showMsg("An unknown network error has occurred");
-          setTimeout(getFallowingUsers, 10000);
-        },
-      });
-    }
+    $.ajax({
+      method: "POST",
+      url: "/api/me/fallowings",
+      data: {
+        csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+        page: fallowingUsers.items.length / 15 + 1,
+      },
+      success: (r) => {
+        if (r.result) {
+          r["items"] = fallowingUsers.items.concat(r.items);
+          r["isReady"] = true;
+          setFallowingUsers(r);
+        } else {
+          showMsg("An unexpected error occurred");
+        }
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+        setTimeout(getFallowingUsers, 10000);
+      },
+    });
   };
   const getTags = () => {
-    if (tags.hasNext) {
-      $.ajax({
-        method: "POST",
-        url: "/api/me/tags",
-        data: {
-          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
-          page: tags.items.length / 15 + 1,
-        },
-        success: (r) => {
-          if (r.result) {
-            r["items"] = tags.items.concat(r.items);
-            r["isReady"] = true;
-            setTags(r);
-          } else {
-            showMsg("An unexpected error occurred");
-          }
-        },
-        error: () => {
-          showMsg("An unknown network error has occurred");
-          setTimeout(getTags, 10000);
-        },
-      });
-    }
+    $.ajax({
+      method: "POST",
+      url: "/api/me/tags",
+      data: {
+        csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+        page: tags.items.length / 15 + 1,
+      },
+      success: (r) => {
+        if (r.result) {
+          r["items"] = tags.items.concat(r.items);
+          r["isReady"] = true;
+          setTags(r);
+        } else {
+          showMsg("An unexpected error occurred");
+        }
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+        setTimeout(getTags, 10000);
+      },
+    });
+  };
+
+  const getBase = () => {
+    $.ajax({
+      method: "GET",
+      url: "/api/base/",
+      data: {
+        csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+      },
+      success: (r) => {
+        setRec({ ...r.rec, ["isReady"]: true });
+        if (r.me) {
+          setFallowingUsers({ ...r.fallowings, ["isReady"]: true });
+          setTags({ ...r.tags, ["isReady"]: true });
+          setData({ ...data, ["me"]: r.me || {} });
+        }
+        data.setIsReady(true);
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+        setTimeout(getBase, 10000);
+      },
+    });
   };
 
   useEffect(() => {
-    getMyInfo([data, setData]); // update user
+    getBase();
   }, [1]);
 
   useEffect(() => {
-    getRec();
-    if (data.me.id) {
-      getFallowingUsers();
-      getTags();
-    }
-  }, [data]);
-
-  useEffect(() => {
-    const lastChild = document.querySelector(".postsContainer .loading");
+    const load = document.querySelector("#postsContainer .loading");
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -853,13 +863,13 @@ const Home = ({}) => {
         }
       });
     });
-    if (lastChild) {
-      observer.observe(lastChild);
+    if (load) {
+      observer.observe(load);
     }
   }, [rec, latests]);
 
   useEffect(() => {
-    const lastChild = document.querySelector("#tagsContainer .loading");
+    const load = document.querySelector("#tagsContainer .loading");
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -868,13 +878,13 @@ const Home = ({}) => {
         }
       });
     });
-    if (lastChild) {
-      observer.observe(lastChild);
+    if (load) {
+      observer.observe(load);
     }
   }, [tags]);
 
   useEffect(() => {
-    const lastChild = document.querySelector(
+    const load = document.querySelector(
       "#fallowingUsersContainer .loading"
     );
 
@@ -885,8 +895,8 @@ const Home = ({}) => {
         }
       });
     });
-    if (lastChild) {
-      observer.observe(lastChild);
+    if (load) {
+      observer.observe(load);
     }
   }, [fallowingUsers]);
 
@@ -971,7 +981,7 @@ const Home = ({}) => {
               </button>
             </div>
           )}
-          <div className="postsContainer">
+          <div id="postsContainer">
             {state == "rec" &&
               rec.items.map((i) => <Post post={i} key={i.id} />)}
             {state == "latests" &&
@@ -1005,47 +1015,46 @@ const TagView = ({}) => {
       url: `/api/t/${url.name}`,
       data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken },
       success: (r) => {
-        if (r.result) {
-          setTag({ ...r.tag, ["isReady"]: true });
-        } else {
-          showMsg("An unknown error has occurred");
-        }
+        setTag({ ...r.tag, ["isReady"]: true });
+        setPosts({ ...r.posts, ["isReady"]: true });
+
+        setData({ ...data, ["me"]: r.me });
+        data.setIsReady(true);
       },
       error: (xhr) => {
-        if (xhr.status == 404){
+        if (xhr.status == 404) {
           setIs404(true);
-        }else{
-        showMsg("An unknown network error has occurred");}
+        } else {
+          showMsg("An unknown network error has occurred");
+        }
       },
     });
   };
   const getPosts = () => {
-    if (posts.hasNext) {
-      $.ajax({
-        method: "POST",
-        url: `/api/posts/${url.name}`,
-        data: {
-          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
-          page: posts.items.length / 15 + 1,
-        },
-        success: (r) => {
-          if (r.result) {
-            r["items"] = posts.items.concat(r.items);
-            r["isReady"] = true;
-            setPosts(r);
-          } else {
-            showMsg("An unknown error has occurred");
-          }
-        },
-        error: () => {
-          showMsg("An unknown network error has occurred");
-          setTimeout(getPosts, 10000);
-        },
-      });
-    }
+    $.ajax({
+      method: "POST",
+      url: `/api/posts/${url.name}`,
+      data: {
+        csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+        page: posts.items.length / 15 + 1,
+      },
+      success: (r) => {
+        if (r.result) {
+          r["items"] = posts.items.concat(r.items);
+          r["isReady"] = true;
+          setPosts(r);
+        } else {
+          showMsg("An unknown error has occurred");
+        }
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+        setTimeout(getPosts, 10000);
+      },
+    });
   };
   useEffect(() => {
-    const lastChild = document.querySelector("#postsContainer .loading");
+    const load = document.querySelector("#postsContainer .loading");
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -1054,15 +1063,13 @@ const TagView = ({}) => {
         }
       });
     });
-    if (lastChild) {
-      observer.observe(lastChild);
+    if (load) {
+      observer.observe(load);
     }
   }, [posts]);
 
   useEffect(() => {
     getTag();
-    getMyInfo([data, setData]);
-    getPosts();
   }, [1]);
 
   const fallow = () => {
@@ -1089,72 +1096,76 @@ const TagView = ({}) => {
   return (
     <main>
       <main className="mt-16 mb-16 sm:m-0 sm:ml-16 flex items-center justify-center">
-        {is404?<Page404 />:(<section className="p-6 max-w-6xl w-full">
-          {tag.isReady ? (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <span
-                  className={`text-${genColor(
-                    tag.id
-                  )} text-7xl sm:text-8xl mr-2 `}
-                >
-                  #
-                </span>
-
-                <div className="flex flex-col">
-                  <h1 className="text-lg sm:text-xl ">{tag.name}</h1>
-                  <span className="text-gray-500">
-                    {nFormatter(tag.fallowers)} fallowers
+        {is404 ? (
+          <Page404 />
+        ) : (
+          <section className="p-6 max-w-6xl w-full">
+            {tag.isReady ? (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <span
+                    className={`text-${genColor(
+                      tag.id
+                    )} text-7xl sm:text-8xl mr-2 `}
+                  >
+                    #
                   </span>
-                </div>
-              </div>
-              <button
-                onClick={fallow}
-                className={`py-1 px-3 rounded-full active:scale-[0.98] transition-all focus-visible:scale-110 ${
-                  tag.fallowed
-                    ? "text-indigo-500 border-2 border-indigo-500 bg-white"
-                    : "text-white bg-indigo-500"
-                } `}
-              >
-                {tag.fallowed ? "Unfallow" : "Fallow"}
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center overflow-hidden relative fadeInLoad">
-                <span className="text-gray-200 text-7xl sm:text-8xl mr-2 ">
-                  #
-                </span>
-                <div>
-                  <div className="h-5 bg-gray-200 rounded-full w-32" />
-                  <div className="mt-1 h-4 bg-gray-200 rounded-full w-16" />
-                </div>
-              </div>
-              <div className="py-1 px-3 rounded-full bg-gray-200 relative fadeInLoad overflow-hidden  w-20 h-8" />
-            </div>
-          )}
 
-          {posts.isReady ? (
-            <div className="mt-8 border-b-2 border-gray-400 flex ">
-              <button className="py-2 px-3 border-b-2 border-gray-900 translate-y-[2px] ">
-                Home
-              </button>
-            </div>
-          ) : (
-            <div className="tm-4 border-b-2 flex ">
-              <button className="py-2 px-3 translate-y-[2px] border-b-2">
-                <div className="fadeInLoad relative rounded-full h-5 w-20 bg-gray-200" />
-              </button>
-            </div>
-          )}
+                  <div className="flex flex-col">
+                    <h1 className="text-lg sm:text-xl ">{tag.name}</h1>
+                    <span className="text-gray-500">
+                      {nFormatter(tag.fallowers)} fallowers
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={fallow}
+                  className={`py-1 px-3 rounded-full active:scale-[0.98] transition-all focus-visible:scale-110 ${
+                    tag.fallowed
+                      ? "text-indigo-500 border-2 border-indigo-500 bg-white"
+                      : "text-white bg-indigo-500"
+                  } `}
+                >
+                  {tag.fallowed ? "Unfallow" : "Fallow"}
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center overflow-hidden relative fadeInLoad">
+                  <span className="text-gray-200 text-7xl sm:text-8xl mr-2 ">
+                    #
+                  </span>
+                  <div>
+                    <div className="h-5 bg-gray-200 rounded-full w-32" />
+                    <div className="mt-1 h-4 bg-gray-200 rounded-full w-16" />
+                  </div>
+                </div>
+                <div className="py-1 px-3 rounded-full bg-gray-200 relative fadeInLoad overflow-hidden  w-20 h-8" />
+              </div>
+            )}
 
-          <div id="postsContainer">
-            {posts.isReady
-              ? posts.items.map((p) => <Post post={p} key={p.id} />)
-              : [1, 2, 3, 4, 5].map((i) => <Post loading={true} key={i} />)}
-            {posts.hasNext && posts.isReady ? <Loading /> : ""}
-          </div>
-        </section>)}
+            {posts.isReady ? (
+              <div className="mt-8 border-b-2 border-gray-400 flex ">
+                <button className="py-2 px-3 border-b-2 border-gray-900 translate-y-[2px] ">
+                  Home
+                </button>
+              </div>
+            ) : (
+              <div className="tm-4 border-b-2 flex ">
+                <button className="py-2 px-3 translate-y-[2px] border-b-2">
+                  <div className="fadeInLoad relative rounded-full h-5 w-20 bg-gray-200" />
+                </button>
+              </div>
+            )}
+
+            <div id="postsContainer">
+              {posts.isReady
+                ? posts.items.map((p) => <Post post={p} key={p.id} />)
+                : [1, 2, 3, 4, 5].map((i) => <Post loading={true} key={i} />)}
+              {posts.hasNext && posts.isReady ? <Loading /> : ""}
+            </div>
+          </section>
+        )}
       </main>
     </main>
   );
@@ -1324,83 +1335,77 @@ const SearchView = ({}) => {
   const [searchValue, setSearchValue] = useState("");
 
   const getTopPosts = () => {
-    if (topPosts.hasNext) {
-      $.ajax({
-        method: "POST",
-        url: "/api/top-posts",
-        data: {
-          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
-          page: topPosts.items.length / 15 + 1,
-        },
-        success: (r) => {
-          if (r.result) {
-            r["items"] = topPosts.items.concat(r.items);
-            r["isReady"] = true;
+    $.ajax({
+      method: "POST",
+      url: "/api/top-posts",
+      data: {
+        csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+        page: topPosts.items.length / 15 + 1,
+      },
+      success: (r) => {
+        if (r.result) {
+          r["items"] = topPosts.items.concat(r.items);
+          r["isReady"] = true;
 
-            setTopPosts(r);
-          } else {
-            showMsg("An unexpected error occurred");
-          }
-        },
-        error: () => {
-          showMsg("An unknown network error has occurred");
-          setTimeout(getTopPosts, 10000);
-        },
-      });
-    }
+          setTopPosts(r);
+        } else {
+          showMsg("An unexpected error occurred");
+        }
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+        setTimeout(getTopPosts, 10000);
+      },
+    });
   };
 
   const getTopUsers = () => {
-    if (topUsers.hasNext) {
-      $.ajax({
-        method: "POST",
-        url: "/api/top-users",
-        data: {
-          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
-          page: topUsers.items.length / 15 + 1,
-        },
-        success: (r) => {
-          if (r.result) {
-            r["items"] = topUsers.items.concat(r.items);
-            r["isReady"] = true;
+    $.ajax({
+      method: "POST",
+      url: "/api/top-users",
+      data: {
+        csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+        page: topUsers.items.length / 15 + 1,
+      },
+      success: (r) => {
+        if (r.result) {
+          r["items"] = topUsers.items.concat(r.items);
+          r["isReady"] = true;
 
-            setTopUsers(r);
-          } else {
-            showMsg("An unexpected error occurred");
-          }
-        },
-        error: () => {
-          showMsg("An unknown network error has occurred");
-          setTimeout(getTopUsers, 10000);
-        },
-      });
-    }
+          setTopUsers(r);
+        } else {
+          showMsg("An unexpected error occurred");
+        }
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+        setTimeout(getTopUsers, 10000);
+      },
+    });
   };
 
   const getTopTags = () => {
-    if (topTags.hasNext) {
-      $.ajax({
-        method: "POST",
-        url: "/api/top-tags",
-        data: {
-          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
-          page: topTags.items.length / 15 + 1,
-        },
-        success: (r) => {
-          if (r.result) {
-            r["items"] = topTags.items.concat(r.items);
-            r["isReady"] = true;
-            setTopTags(r);
-          } else {
-            showMsg("An unexpected error occurred");
-          }
-        },
-        error: () => {
-          showMsg("An unknown network error has occurred");
-          setTimeout(getTopTags, 10000);
-        },
-      });
-    }
+    $.ajax({
+      method: "POST",
+      url: "/api/top-tags",
+      data: {
+        csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+        page: topTags.items.length / 15 + 1,
+      },
+      success: (r) => {
+        if (r.result) {
+          r["items"] = topTags.items.concat(r.items);
+          r["isReady"] = true;
+          setTopTags(r);
+        } else {
+          showMsg("An unexpected error occurred");
+        }
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+        setTimeout(getTopTags, 10000);
+      },
+    });
   };
 
   const search = () => {
@@ -1442,9 +1447,29 @@ const SearchView = ({}) => {
     }
   };
 
+  const getBase = () => {
+    $.ajax({
+      method: "GET",
+      url: "/api/base/search",
+      data: {
+        csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+      },
+      success: (r) => {
+        setTopPosts({ ...r.posts, ["isReady"]: true });
+        setTopTags({ ...r.tags, ["isReady"]: true });
+        setTopUsers({ ...r.users, ["isReady"]: true });
+        setData({ ...data, ["me"]: r.me || {} });
+        data.setIsReady(true);
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+        setTimeout(getBase, 10000);
+      },
+    });
+  };
+
   useEffect(() => {
-    getMyInfo([data, setData]);
-    getTopPosts();
+    getBase();
   }, [1]);
 
   useEffect(() => {
@@ -1452,7 +1477,7 @@ const SearchView = ({}) => {
   }, [searchValue, state]);
 
   useEffect(() => {
-    const lastChild = document.querySelector("#searchContainer .loading");
+    const load = document.querySelector("#searchContainer .loading");
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -1471,10 +1496,10 @@ const SearchView = ({}) => {
         }
       });
     });
-    if (lastChild) {
-      observer.observe(lastChild);
+    if (load) {
+      observer.observe(load);
     }
-  }, [topUsers, topTags, topPosts, posts, users, tags]);
+  }, [topUsers, topTags, topPosts, posts, users, tags, state]);
 
   return (
     <main>
@@ -1495,9 +1520,6 @@ const SearchView = ({}) => {
               <button
                 onClick={() => {
                   setState("posts");
-                  if (topPosts.items.length == 0 && !searchValue.length) {
-                    getTopPosts();
-                  }
                 }}
                 className={`transition-all py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto focus-visible:scale-110  focus-visible:opacity-100 ${
                   state == "posts" ? "border-gray-900" : "opacity-[0.75]"
@@ -1508,9 +1530,6 @@ const SearchView = ({}) => {
               <button
                 onClick={() => {
                   setState("users");
-                  if (topUsers.items.length == 0 && !searchValue.length) {
-                    getTopUsers();
-                  }
                 }}
                 className={`transition-all py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto focus-visible:scale-110  focus-visible:opacity-100 ${
                   state == "users" ? "border-gray-900" : "opacity-[0.75]"
@@ -1521,9 +1540,6 @@ const SearchView = ({}) => {
               <button
                 onClick={() => {
                   setState("tags");
-                  if (topTags.items.length == 0 && !searchValue.length) {
-                    getTopTags();
-                  }
                 }}
                 className={`transition-all py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto focus-visible:scale-110  focus-visible:opacity-100 ${
                   state == "tags" ? "border-gray-900" : "opacity-[0.75]"
@@ -1533,7 +1549,6 @@ const SearchView = ({}) => {
               </button>
             </div>
             <div id="searchContainer">
-              {/* {items()} */}
               {searchValue.replace(/\s+/g, "")
                 ? state == "posts"
                   ? posts.isReady
@@ -1596,33 +1611,31 @@ const BookmarkView = ({}) => {
   const [data, setData] = useContext(Context);
 
   const getBookmarks = () => {
-    if (bookmarks.hasNext) {
-      $.ajax({
-        method: "POST",
-        url: "/api/me/bookmarks",
-        data: {
-          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
-          page: bookmarks.items.length / 15 + 1,
-        },
-        success: (r) => {
-          if (r.result) {
-            r["items"] = bookmarks.items.concat(r.items);
-            r["isReady"] = true;
-            setBookmarks(r);
-          } else {
-            showMsg("An unknown error has occurred");
-          }
-        },
-        error: () => {
-          showMsg("An unknown network error has occurred");
-          setTimeout(getBookamrks, 10000);
-        },
-      });
-    }
+    $.ajax({
+      method: "POST",
+      url: "/api/me/bookmarks",
+      data: {
+        csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+        page: bookmarks.items.length / 15 + 1,
+      },
+      success: (r) => {
+        if (r.result) {
+          r["items"] = bookmarks.items.concat(r.items);
+          r["isReady"] = true;
+          setBookmarks(r);
+        } else {
+          showMsg("An unknown error has occurred");
+        }
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+        setTimeout(getBookmarks, 10000);
+      },
+    });
   };
 
   useEffect(() => {
-    const lastChild = document.querySelector("#bookmarksContainer .loading");
+    const load = document.querySelector("#bookmarksContainer .loading");
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -1631,14 +1644,34 @@ const BookmarkView = ({}) => {
         }
       });
     });
-    if (lastChild) {
-      observer.observe(lastChild);
+    if (load) {
+      observer.observe(load);
     }
   }, [bookmarks]);
 
+  const getBase = () => {
+    $.ajax({
+      method: "GET",
+      url: "/api/base/bookmarks",
+      data: {
+        csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+      },
+      success: (r) => {
+        if (r.result) {
+          setBookmarks({ ...r.bookmarks, ["isReady"]: true });
+          setData({ ...data, ["me"]: r.me });
+          data.setIsReady(true);
+        }
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+        setTimeout(getBase, 10000);
+      },
+    });
+  };
+
   useEffect(() => {
-    getMyInfo([data, setData]);
-    getBookmarks();
+    getBase();
   }, [1]);
 
   return (
@@ -1686,29 +1719,27 @@ const WriteView = ({}) => {
     url.id ? `/api/write/${url.id}` : "/api/write"
   );
   const getTopTags = () => {
-    if (topTags.hasNext) {
-      $.ajax({
-        method: "POST",
-        url: `/api/top-tags`,
-        data: {
-          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
-          page: topTags.items.length / 15 + 1,
-        },
-        success: (r) => {
-          if (r.result) {
-            r["items"] = topTags.items.concat(r.items);
-            r["isReady"] = true;
-            setTopTags(r);
-          } else {
-            showMsg("An unknown error has occurred");
-          }
-        },
-        error: () => {
-          showMsg("An unknown network error has occurred");
-          setTimeout(getTopTag, 10000);
-        },
-      });
-    }
+    $.ajax({
+      method: "POST",
+      url: `/api/top-tags`,
+      data: {
+        csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+        page: topTags.items.length / 15 + 1,
+      },
+      success: (r) => {
+        if (r.result) {
+          r["items"] = topTags.items.concat(r.items);
+          r["isReady"] = true;
+          setTopTags(r);
+        } else {
+          showMsg("An unknown error has occurred");
+        }
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+        setTimeout(getTopTag, 10000);
+      },
+    });
   };
   const getPost = () => {
     $.ajax({
@@ -1728,11 +1759,12 @@ const WriteView = ({}) => {
         }
       },
       error: (xhr) => {
-        if (xhr.status == 404){
+        if (xhr.status == 404) {
           setIs404(true);
-        }else{
-        showMsg("An unknown network error has occurred");
-        setTimeout(getPost, 10000);}
+        } else {
+          showMsg("An unknown network error has occurred");
+          setTimeout(getPost, 10000);
+        }
       },
     });
   };
@@ -1755,8 +1787,6 @@ const WriteView = ({}) => {
     const pyload = new FormData();
     pyload.append("image", file);
     pyload.append("csrfmiddlewaretoken", data.csrfmiddlewaretoken);
-    pyload.append("d", "text");
-    console.log(file);
     $.ajax({
       method: "POST",
       url: "/api/upload",
@@ -1891,13 +1921,12 @@ const WriteView = ({}) => {
     });
   };
   useEffect(() => {
-    const lastChild = document.querySelector("#tagsContainer .loading");
-    console.log(lastChild);
+    const load = document.querySelector("#tagsContainer .loading");
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          if (srchTag.replace(/\W+/g, "").length && crntTags.hasNext) {
+          if (srchTag.replace(/\W+/g, "").length) {
             searchTag({ target: { value: srchTag } }, true);
           } else {
             getTopTags();
@@ -1905,255 +1934,260 @@ const WriteView = ({}) => {
         }
       });
     });
-    if (lastChild) {
-      observer.observe(lastChild);
+    if (load) {
+      observer.observe(load);
     }
   }, [srchTag, topTags, crntTags]);
 
   return (
     <main>
       <main className="mt-16 mb-16 sm:m-0 sm:ml-16 flex items-center justify-center">
-        {is404?<Page404 />:(<section className="p-6 max-w-6xl w-full">
-          <div className="flex items-center justify-between mb-5">
-            <div>
-              <button className="relative px-4 py-1 border-2 border-gray-300 rounded-full cursor-pointer active:scale-[0.98] active:opacity-90 transition-all focus-visible:scale-110 focus-visible:border-gray-700">
-                Upload
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleUpload}
-                  className="cursor-pointer w-full h-full opacity-0 absolute right-0 bottom-0"
-                />
-              </button>
-              {saved ? (
-                <button
-                  onClick={deletePost}
-                  className="ml-2 text-red-500 relative px-4 py-1 border-2 border-gray-300 rounded-full cursor-pointer active:scale-[0.98] active:opacity-90 transition-all focus-visible:scale-110 focus-visible:border-gray-700"
-                >
-                  <span className="hidden sm:inline">Delete</span>
-                  <i className="bi bi-trash sm:hidden"></i>
-                </button>
-              ) : (
-                ""
-              )}
-            </div>
-            <div className="flex">
-              <button
-                onClick={saved ? status : save}
-                className="z-10 top-3 right-3 fixed sm:relative sm:top-0 sm:right-0 px-8 py-2 sm:translate-x-0 sm:translate-y-0 sm:px-4 sm:py-1 bg-gray-900 text-white rounded-full mr-2 cursor-pointer active:scale-[0.98] active:opacity-90 transition-all focus-visible:scale-110 "
-              >
-                {saved ? (post.isPub ? "Draft" : "Publish") : "Save"}
-              </button>
-              <button
-                onClick={() => setIsPreview(!isPreview)}
-                className="px-4 py-1 border-2 border-gray-300 rounded-full cursor-pointer active:scale-[0.98] active:opacity-90 transition-all focus-visible:scale-110 focus-visible:border-gray-700"
-              >
-                {isPreview ? "Edit" : "Preview"}
-              </button>
-            </div>
-          </div>
-          {isPreview ? (
-            <div>
-              <div className="head flex items-center justify-between">
-                <div className="flex items-center ">
-                  <img
-                    src={data.me.profile}
-                    alt={`${data.me.name}'s image`}
-                    className="w-12 h-12 rounded-full "
+        {is404 ? (
+          <Page404 />
+        ) : (
+          <section className="p-6 max-w-6xl w-full">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <button className="relative px-4 py-1 border-2 border-gray-300 rounded-full cursor-pointer active:scale-[0.98] active:opacity-90 transition-all focus-visible:scale-110 focus-visible:border-gray-700">
+                  Upload
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleUpload}
+                    className="cursor-pointer w-full h-full opacity-0 absolute right-0 bottom-0"
                   />
+                </button>
+                {saved ? (
+                  <button
+                    onClick={deletePost}
+                    className="ml-2 text-red-500 relative px-4 py-1 border-2 border-gray-300 rounded-full cursor-pointer active:scale-[0.98] active:opacity-90 transition-all focus-visible:scale-110 focus-visible:border-gray-700"
+                  >
+                    <span className="hidden sm:inline">Delete</span>
+                    <i className="bi bi-trash sm:hidden"></i>
+                  </button>
+                ) : (
+                  ""
+                )}
+              </div>
+              <div className="flex">
+                <button
+                  onClick={saved ? status : save}
+                  className="z-10 top-3 right-3 fixed sm:relative sm:top-0 sm:right-0 px-8 py-2 sm:translate-x-0 sm:translate-y-0 sm:px-4 sm:py-1 bg-gray-900 text-white rounded-full mr-2 cursor-pointer active:scale-[0.98] active:opacity-90 transition-all focus-visible:scale-110 "
+                >
+                  {saved ? (post.isPub ? "Draft" : "Publish") : "Save"}
+                </button>
+                <button
+                  onClick={() => setIsPreview(!isPreview)}
+                  className="px-4 py-1 border-2 border-gray-300 rounded-full cursor-pointer active:scale-[0.98] active:opacity-90 transition-all focus-visible:scale-110 focus-visible:border-gray-700"
+                >
+                  {isPreview ? "Edit" : "Preview"}
+                </button>
+              </div>
+            </div>
+            {isPreview ? (
+              <div>
+                <div className="head flex items-center justify-between">
+                  <div className="flex items-center ">
+                    <img
+                      src={data.me.profile}
+                      alt={`${data.me.name}'s image`}
+                      className="w-12 h-12 rounded-full "
+                    />
 
-                  <div className="flex flex-col ml-3">
-                    <h1 className="text-md sm:text-xl font-semibold max-w-[19ch] sm:max-w-[25ch] lg:max-w-[50ch] truncate">
-                      {data.me.name}
-                    </h1>
-                    <div>
-                      <span className="text-gray-500 whitespace-pre">
-                        {timeSince(post.date)}
-                      </span>
-                      <span className="text-gray-500 mx-1">•</span>
-                      <span className="text-gray-500 whitespace-pre">
-                        {Math.ceil(
-                          (cleanMd(post.text || "") || "").split(" ").length /
-                            200
-                        )}{" "}
-                        min <span className="hidden sm:inline">read</span>
-                      </span>
+                    <div className="flex flex-col ml-3">
+                      <h1 className="text-md sm:text-xl font-semibold max-w-[19ch] sm:max-w-[25ch] lg:max-w-[50ch] truncate">
+                        {data.me.name}
+                      </h1>
+                      <div>
+                        <span className="text-gray-500 whitespace-pre">
+                          {timeSince(post.date)}
+                        </span>
+                        <span className="text-gray-500 mx-1">•</span>
+                        <span className="text-gray-500 whitespace-pre">
+                          {Math.ceil(
+                            (cleanMd(post.text || "") || "").split(" ").length /
+                              200
+                          )}{" "}
+                          min <span className="hidden sm:inline">read</span>
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="tags flex mt-3 items-center justify-between">
-                <div className="relative flex items-center whitespace-pre w-[calc(100%-1rem)] overflow-hidden  after:bg-gradient-to-l after:from-white after:to-transparent after:right-0 after:absolute after:h-full after:w-6">
-                  {post.tags &&
-                    post.tags.map((i) => <Tag tag={i} key={i.id} />)}
+                <div className="tags flex mt-3 items-center justify-between">
+                  <div className="relative flex items-center whitespace-pre w-[calc(100%-1rem)] overflow-hidden  after:bg-gradient-to-l after:from-white after:to-transparent after:right-0 after:absolute after:h-full after:w-6">
+                    {post.tags &&
+                      post.tags.map((i) => <Tag tag={i} key={i.id} />)}
+                  </div>
                 </div>
-              </div>
 
-              <article
-                dir="auto"
-                className="post-body mt-2"
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(
-                    marked.parse(
-                      `# ` +
-                        (post.title || "Title") +
-                        `\n` +
-                        (post.text || "Post body")
-                    )
-                  ),
-                }}
-              />
-            </div>
-          ) : (
-            <div className="write">
-              <input
-                defaultValue={post.title}
-                className="text-2xl w-full"
-                type="text"
-                name="title"
-                onChange={handleChange}
-                placeholder="Title of the post"
-              />
-              <span
-                className={`${
-                  messages.title || messages.slug
-                    ? "text-red-500"
-                    : "text-gray-700"
-                } text-sm`}
-              >
-                {messages.title ||
-                  messages.slug ||
-                  "Show on top of post and other people can find your post with it."}
-              </span>
-              <div className="flex flex-col sm:flex-row">
-                <div className="">
-                  {post.tags &&
-                    post.tags.map((i) => (
-                      <span
-                        key={i.id}
-                        className="p-1 border-b-[1px] border-gray-300 mr-2"
-                      >
-                        <span className={`text-${genColor(i.id)}`}>
-                          #<span className="ml-1 text-gray-700">{i.name}</span>
-                        </span>
-                        <i
-                          className="bi bi-x p-1 cursor-pointer"
-                          onClick={() => {
-                            setPost({
-                              ...post,
-                              ["tags"]: (post.tags || []).filter(
-                                (pt) => pt.id != i.id
-                              ),
-                            });
-                          }}
-                        />
-                      </span>
-                    ))}
-                </div>
-                <div className="relative group mt-2 sm:mt-0">
-                  {!post.tags || post.tags.length < 3 ? (
-                    <input
-                      autoComplete="none"
-                      type="text"
-                      id="tagInput"
-                      className="w-full"
-                      placeholder="Add tags"
-                      onChange={(e) => {
-                        searchTag(e);
-                        setSrchTag(e.target.value);
-                      }}
-                      defaultValue={srchTag}
-                    />
-                  ) : (
-                    ""
-                  )}
-                  <ul
-                    id="tagsContainer"
-                    className=" rounded-xl absolute top-[2rem] left-0 bg-gray-100 shadow-xl h-64 overflow-auto opacity-0 pointer-events-none group-focus-within:opacity-100 group-focus-within:pointer-events-auto w-64"
-                  >
-                    {(
-                      avTags() ||
-                      (!srchTag.includes(" ")
-                        ? [{ id: srchTag, name: srchTag }]
-                        : [])
-                    ).map((i) => (
-                      <li key={i.id}>
-                        <button
-                          onClick={() => {
-                            setPost({
-                              ...post,
-                              ["tags"]: (post.tags || []).concat(i),
-                            });
-                            $("#tagInput").val("");
-                            setSaved(false);
-                          }}
-                          className="w-full flex  hover:bg-gray-200 px-3 focus-visible:bg-gray-200  py-2"
+                <article
+                  dir="auto"
+                  className="post-body mt-2"
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(
+                      marked.parse(
+                        `# ` +
+                          (post.title || "Title") +
+                          `\n` +
+                          (post.text || "Post body")
+                      )
+                    ),
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="write">
+                <input
+                  defaultValue={post.title}
+                  className="text-2xl w-full"
+                  type="text"
+                  name="title"
+                  onChange={handleChange}
+                  placeholder="Title of the post"
+                />
+                <span
+                  className={`${
+                    messages.title || messages.slug
+                      ? "text-red-500"
+                      : "text-gray-700"
+                  } text-sm`}
+                >
+                  {messages.title ||
+                    messages.slug ||
+                    "Show on top of post and other people can find your post with it."}
+                </span>
+                <div className="flex flex-col sm:flex-row">
+                  <div className="">
+                    {post.tags &&
+                      post.tags.map((i) => (
+                        <span
+                          key={i.id}
+                          className="p-1 border-b-[1px] border-gray-300 mr-2"
                         >
-                          <div className="flex items-center w-full">
-                            <span
-                              className={`text-${genColor(
-                                i.id
-                              )} text-5xl mr-2 `}
-                            >
-                              #
-                            </span>
-                            <div className="flex flex-col items-start">
-                              <h1
-                                name={`# ${i.name}`}
-                                className="text-md truncate contents"
-                              >
-                                {i.name}
-                              </h1>
-                              <span className="text-sm text-gray-500 ">
-                                {nFormatter(i.fallowers || 0)} Fallowers
-                              </span>
-                            </div>
-                          </div>
-                        </button>
-                      </li>
-                    ))}
-                    {(topTags.hasNext && topTags.isReady) ||
-                    (crntTags.hasNext && crntTags.isReady) ? (
-                      <div className="w-full py-3 loading text-xl text-center">
-                        ...
-                      </div>
+                          <span className={`text-${genColor(i.id)}`}>
+                            #
+                            <span className="ml-1 text-gray-700">{i.name}</span>
+                          </span>
+                          <i
+                            className="bi bi-x p-1 cursor-pointer"
+                            onClick={() => {
+                              setPost({
+                                ...post,
+                                ["tags"]: (post.tags || []).filter(
+                                  (pt) => pt.id != i.id
+                                ),
+                              });
+                            }}
+                          />
+                        </span>
+                      ))}
+                  </div>
+                  <div className="relative group mt-2 sm:mt-0">
+                    {!post.tags || post.tags.length < 3 ? (
+                      <input
+                        autoComplete="none"
+                        type="text"
+                        id="tagInput"
+                        className="w-full"
+                        placeholder="Add tags"
+                        onChange={(e) => {
+                          searchTag(e);
+                          setSrchTag(e.target.value);
+                        }}
+                        defaultValue={srchTag}
+                      />
                     ) : (
                       ""
                     )}
-                  </ul>
-                </div>
-              </div>
-              <textarea
-                dir="auto"
-                defaultValue={post.text}
-                onChange={handleChange}
-                name="text"
-                placeholder="Body of the post"
-                className="mt-3 text-xl w-full h-[70vh] resize-none"
-              ></textarea>
-              <span
-                className={`${
-                  messages.text ? "text-red-500" : "text-gray-700"
-                } text-sm`}
-              >
-                {messages.text || (
-                  <span>
-                    We use
-                    <a
-                      href="#markdown"
-                      target="_blank"
-                      className="text-indigo-500 mx-1 contents"
+                    <ul
+                      id="tagsContainer"
+                      className=" rounded-xl absolute top-[2rem] left-0 bg-gray-100 shadow-xl h-64 overflow-auto opacity-0 pointer-events-none group-focus-within:opacity-100 group-focus-within:pointer-events-auto w-64"
                     >
-                      markdown
-                    </a>
-                    to render your post body.
-                  </span>
-                )}
-              </span>
-            </div>
-          )}
-        </section>)}
+                      {(
+                        avTags() ||
+                        (!srchTag.includes(" ")
+                          ? [{ id: srchTag, name: srchTag }]
+                          : [])
+                      ).map((i) => (
+                        <li key={i.id}>
+                          <button
+                            onClick={() => {
+                              setPost({
+                                ...post,
+                                ["tags"]: (post.tags || []).concat(i),
+                              });
+                              $("#tagInput").val("");
+                              setSaved(false);
+                            }}
+                            className="w-full flex  hover:bg-gray-200 px-3 focus-visible:bg-gray-200  py-2"
+                          >
+                            <div className="flex items-center w-full">
+                              <span
+                                className={`text-${genColor(
+                                  i.id
+                                )} text-5xl mr-2 `}
+                              >
+                                #
+                              </span>
+                              <div className="flex flex-col items-start">
+                                <h1
+                                  name={`# ${i.name}`}
+                                  className="text-md truncate contents"
+                                >
+                                  {i.name}
+                                </h1>
+                                <span className="text-sm text-gray-500 ">
+                                  {nFormatter(i.fallowers || 0)} Fallowers
+                                </span>
+                              </div>
+                            </div>
+                          </button>
+                        </li>
+                      ))}
+                      {(topTags.hasNext && topTags.isReady) ||
+                      (crntTags.hasNext && crntTags.isReady) ? (
+                        <div className="w-full py-3 loading text-xl text-center">
+                          ...
+                        </div>
+                      ) : (
+                        ""
+                      )}
+                    </ul>
+                  </div>
+                </div>
+                <textarea
+                  dir="auto"
+                  defaultValue={post.text}
+                  onChange={handleChange}
+                  name="text"
+                  placeholder="Body of the post"
+                  className="mt-3 text-xl w-full h-[70vh] resize-none"
+                ></textarea>
+                <span
+                  className={`${
+                    messages.text ? "text-red-500" : "text-gray-700"
+                  } text-sm`}
+                >
+                  {messages.text || (
+                    <span>
+                      We use
+                      <a
+                        href="#markdown"
+                        target="_blank"
+                        className="text-indigo-500 mx-1 contents"
+                      >
+                        markdown
+                      </a>
+                      to render your post body.
+                    </span>
+                  )}
+                </span>
+              </div>
+            )}
+          </section>
+        )}
       </main>
     </main>
   );
@@ -2170,137 +2204,145 @@ const MeView = ({}) => {
   const [tags, setTags] = useState({ items: [], hasNext: true });
 
   const getPosts = () => {
-    if (posts.hasNext) {
-      $.ajax({
-        method: "POST",
-        url: "/api/me/posts",
-        data: {
-          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
-          page: posts.items.length / 15 + 1,
-        },
-        success: (r) => {
-          if (r.result) {
-            r["items"] = posts.items.concat(r.items);
-            r["isReady"] = true;
-            setPosts(r);
-          } else {
-            showMsg("An unexpected error occurred");
-          }
-        },
-        error: () => {
-          showMsg("An unknown network error has occurred");
-          setTimeout(getPosts, 10000);
-        },
-      });
-    }
+    $.ajax({
+      method: "POST",
+      url: "/api/me/posts",
+      data: {
+        csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+        page: posts.items.length / 15 + 1,
+      },
+      success: (r) => {
+        if (r.result) {
+          r["items"] = posts.items.concat(r.items);
+          r["isReady"] = true;
+          setPosts(r);
+        } else {
+          showMsg("An unexpected error occurred");
+        }
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+        setTimeout(getPosts, 10000);
+      },
+    });
   };
 
   const getDposts = () => {
-    if (dposts.hasNext) {
-      $.ajax({
-        method: "POST",
-        url: "/api/me/dposts",
-        data: {
-          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
-          page: dposts.items.length / 15 + 1,
-        },
-        success: (r) => {
-          if (r.result) {
-            r["items"] = dposts.items.concat(r.items);
-            r["isReady"] = true;
-            setDposts(r);
-          } else {
-            showMsg("An unexpected error occurred");
-          }
-        },
-        error: () => {
-          showMsg("An unknown network error has occurred");
-          setTimeout(getDposts, 10000);
-        },
-      });
-    }
+    $.ajax({
+      method: "POST",
+      url: "/api/me/dposts",
+      data: {
+        csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+        page: dposts.items.length / 15 + 1,
+      },
+      success: (r) => {
+        if (r.result) {
+          r["items"] = dposts.items.concat(r.items);
+          r["isReady"] = true;
+          setDposts(r);
+        } else {
+          showMsg("An unexpected error occurred");
+        }
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+        setTimeout(getDposts, 10000);
+      },
+    });
   };
   const getFallowers = () => {
-    if (fallowers.hasNext) {
-      $.ajax({
-        method: "POST",
-        url: "/api/me/fallowers",
-        data: {
-          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
-          page: fallowers.items.length / 15,
-        },
-        success: (r) => {
-          if (r.result) {
-            r["items"] = fallowers.items.concat(r.items);
-            r["isReady"] = true;
-            setFallowers(r);
-          } else {
-            showMsg("An unexpected error occurred");
-          }
-        },
-        error: () => {
-          showMsg("An unknown network error has occurred");
-          setTimeout(getFallowers, 10000);
-        },
-      });
-    }
+    $.ajax({
+      method: "POST",
+      url: "/api/me/fallowers",
+      data: {
+        csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+        page: fallowers.items.length / 15,
+      },
+      success: (r) => {
+        if (r.result) {
+          r["items"] = fallowers.items.concat(r.items);
+          r["isReady"] = true;
+          setFallowers(r);
+        } else {
+          showMsg("An unexpected error occurred");
+        }
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+        setTimeout(getFallowers, 10000);
+      },
+    });
   };
 
   const getFallowings = () => {
-    if (fallowings.hasNext) {
-      $.ajax({
-        method: "POST",
-        url: "/api/me/fallowings",
-        data: {
-          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
-          page: fallowings.items.length / 15 + 1,
-        },
-        success: (r) => {
-          if (r.result) {
-            r["items"] = fallowings.items.concat(r.items);
-            r["isReady"] = true;
-            console.log(r);
-            setFallowings(r);
-          } else {
-            showMsg("An unexpected error occurred");
-          }
-        },
-        error: () => {
-          showMsg("An unknown network error has occurred");
-          setTimeout(getFallowings, 10000);
-        },
-      });
-    }
+    $.ajax({
+      method: "POST",
+      url: "/api/me/fallowings",
+      data: {
+        csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+        page: fallowings.items.length / 15 + 1,
+      },
+      success: (r) => {
+        if (r.result) {
+          r["items"] = fallowings.items.concat(r.items);
+          r["isReady"] = true;
+          setFallowings(r);
+        } else {
+          showMsg("An unexpected error occurred");
+        }
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+        setTimeout(getFallowings, 10000);
+      },
+    });
   };
   const getTags = () => {
-    if (tags.hasNext) {
-      $.ajax({
-        method: "POST",
-        url: "/api/me/tags",
-        data: {
-          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
-          page: tags.items.length / 15 + 1,
-        },
-        success: (r) => {
-          if (r.result) {
-            r["items"] = tags.items.concat(r.items);
-            r["isReady"] = true;
-            setTags(r);
-          } else {
-            showMsg("An unexpected error occurred");
-          }
-        },
-        error: () => {
-          showMsg("An unknown network error has occurred");
-          setTimeout(getTags, 10000);
-        },
-      });
-    }
+    $.ajax({
+      method: "POST",
+      url: "/api/me/tags",
+      data: {
+        csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+        page: tags.items.length / 15 + 1,
+      },
+      success: (r) => {
+        if (r.result) {
+          r["items"] = tags.items.concat(r.items);
+          r["isReady"] = true;
+          setTags(r);
+        } else {
+          showMsg("An unexpected error occurred");
+        }
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+        setTimeout(getTags, 10000);
+      },
+    });
+  };
+
+  const getBase = () => {
+    $.ajax({
+      method: "GET",
+      url: "/api/base/me",
+      data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken },
+      success: (r) => {
+        if (r.result) {
+          setPosts({ ...r.posts, ["isReady"]: true });
+          setDposts({ ...r.dposts, ["isReady"]: true });
+          setData({ ...data, ["me"]: r.me || {} });
+          data.setIsReady(true);
+        }
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+        setTimeout(getBase, 10000);
+      },
+    });
   };
 
   useEffect(() => {
-    getMyInfo([data, setData]);
-    getDposts();
+    getBase();
   }, [1]);
 
   const closeSide = (e) => {
@@ -2324,7 +2366,7 @@ const MeView = ({}) => {
     }, [1]);
 
     useEffect(() => {
-      const lastChild = document.querySelector("#postsContainer .loading");
+      const load = document.querySelector("#postsContainer .loading");
 
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
@@ -2339,8 +2381,8 @@ const MeView = ({}) => {
           }
         });
       });
-      if (lastChild) {
-        observer.observe(lastChild);
+      if (load) {
+        observer.observe(load);
       }
     }, [fallowers, fallowings, tags]);
 
@@ -2414,7 +2456,7 @@ const MeView = ({}) => {
   };
 
   useEffect(() => {
-    const lastChild = document.querySelector("#postsContainer .loading");
+    const load = document.querySelector("#postsContainer .loading");
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -2427,8 +2469,8 @@ const MeView = ({}) => {
         }
       });
     });
-    if (lastChild) {
-      observer.observe(lastChild);
+    if (load) {
+      observer.observe(load);
     }
   }, [posts, dposts]);
   return (
@@ -2569,23 +2611,22 @@ const PeopleView = ({}) => {
   const [posts, setPosts] = useState({ items: [], hasNext: true });
   const url = useParams();
 
-  const getUser = () => {
+  const getBase = () => {
     $.ajax({
-      method: "POST",
-      url: `/api/@${url.username}`,
+      method: "GET",
+      url: `/api/base/@${url.username}`,
       data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken },
       success: (r) => {
-        if (r.result) {
-          setUser(r.user);
-        } else {
-          showMsg("An unknown error has occurred");
-        }
+        setUser(r.user);
+        setPosts({ ...r.posts, ["isReady"]: true });
+        setData({ ...data, ["me"]: r.me });
+        data.setIsReady(true);
       },
       error: () => {
-        if (xhr.status == 404){
+        if (xhr.status == 404) {
           setIs404(true);
-        }else{
-        showMsg("An unknown network error has occurred");
+        } else {
+          showMsg("An unknown network error has occurred");
           setTimeout(getUser, 10000);
         }
       },
@@ -2593,32 +2634,30 @@ const PeopleView = ({}) => {
   };
 
   const getPosts = () => {
-    if (posts.hasNext) {
-      $.ajax({
-        method: "POST",
-        url: `/api/posts/@${url.username}`,
-        data: {
-          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
-          page: posts.items.length / 15 + 1,
-        },
-        success: (r) => {
-          if (r.result) {
-            r["items"] = posts.items.concat(r.items);
-            r["isReady"] = true;
-            setPosts(r);
-          } else {
-            showMsg("An unknown error has occurred");
-          }
-        },
-        error: () => {
-          showMsg("An unknown network error has occurred");
-          setTimeout(getPosts, 10000);
-        },
-      });
-    }
+    $.ajax({
+      method: "POST",
+      url: `/api/posts/@${url.username}`,
+      data: {
+        csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+        page: posts.items.length / 15 + 1,
+      },
+      success: (r) => {
+        if (r.result) {
+          r["items"] = posts.items.concat(r.items);
+          r["isReady"] = true;
+          setPosts(r);
+        } else {
+          showMsg("An unknown error has occurred");
+        }
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+        setTimeout(getPosts, 10000);
+      },
+    });
   };
   useEffect(() => {
-    const lastChild = document.querySelector("#postsContainer .loading");
+    const load = document.querySelector("#postsContainer .loading");
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -2627,15 +2666,13 @@ const PeopleView = ({}) => {
         }
       });
     });
-    if (lastChild) {
-      observer.observe(lastChild);
+    if (load) {
+      observer.observe(load);
     }
   }, [posts]);
 
   useEffect(() => {
-    getMyInfo([data, setData]);
-    getUser();
-    getPosts();
+    getBase();
   }, [1]);
 
   const fallow = () => {
@@ -2696,7 +2733,7 @@ const PeopleView = ({}) => {
                   {user.fallowed ? "Unfallow" : "Fallow"}
                 </button>
               </div>
-              <p className="my-4 text-gray-700">{user.bio}</p>
+              <p dir="auto" className="my-4 text-gray-700">{user.bio}</p>
             </div>
           ) : (
             <div>
@@ -3602,24 +3639,23 @@ const PostDetail = ({}) => {
   const url = useParams();
 
   const getPost = (username = url.username, slug = url.postSlug) => {
-    console.log("Gettings post")
     $.ajax({
       method: "POST",
       url: `/api/@${username}/${slug}`,
       data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken },
       success: (r) => {
-        if (r.result) {
-          setPost({ ...r.post, ["isReady"]: true });
-        } else {
-          showMsg("An unknown error has occurred");
-        }
+        setPost({ ...r.post, ["isReady"]: true });
+        setPosts({ ...r.posts, ["isReady"]: true });
+        setData({ ...data, ["me"]: r.me || {} });
+        data.setIsReady(true);
       },
       error: (xhr) => {
-        if (xhr.status == 404){
+        if (xhr.status == 404) {
           setIs404(true);
-        }else{
-        showMsg("An unknown network error has occurred");
-        setTimeout(getPost, 10000);}      
+        } else {
+          showMsg("An unknown network error has occurred");
+          setTimeout(getPost, 10000);
+        }
       },
     });
   };
@@ -3649,12 +3685,10 @@ const PostDetail = ({}) => {
 
   useEffect(() => {
     getPost();
-    getPosts();
-    getMyInfo([data, setData]);
   }, [1]);
 
   useEffect(() => {
-    const lastChild = document.querySelector("#postsContainer .loading");
+    const load = document.querySelector("#postsContainer .loading");
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -3663,8 +3697,8 @@ const PostDetail = ({}) => {
         }
       });
     });
-    if (lastChild) {
-      observer.observe(lastChild);
+    if (load) {
+      observer.observe(load);
     }
   }, [posts]);
 
@@ -3907,8 +3941,10 @@ const PostDetail = ({}) => {
         },
         success: (r) => {
           if (r.result) {
-            const allId = comments.items.map((i)=>i.id)
-            r["items"] = comments.items.concat(r.items.map((i)=>!allId.includes(i.id)?i:""));
+            const allId = comments.items.map((i) => i.id);
+            r["items"] = comments.items.concat(
+              r.items.map((i) => (!allId.includes(i.id) ? i : ""))
+            );
             r["isReady"] = true;
             r["load"] = !comments.load;
             setComments(r);
@@ -3918,7 +3954,7 @@ const PostDetail = ({}) => {
         },
         error: () => {
           showMsg("An unknown network error has occurred");
-          setTimeout(getMyInfo, 10000);
+          setTimeout(getComments, 10000);
         },
       });
     };
@@ -3927,7 +3963,7 @@ const PostDetail = ({}) => {
     }, [1]);
 
     useEffect(() => {
-      const lastChild = document.querySelector("#tagsContainer .loading");
+      const load = document.querySelector("#tagsContainer .loading");
 
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
@@ -3936,8 +3972,8 @@ const PostDetail = ({}) => {
           }
         });
       });
-      if (lastChild) {
-        observer.observe(lastChild);
+      if (load) {
+        observer.observe(load);
       }
     }, [comments.load]);
     return (
@@ -4014,244 +4050,255 @@ const PostDetail = ({}) => {
   return (
     <main>
       <main className="mt-16 mb-16 sm:m-0 sm:ml-16 flex items-center justify-center">
-        {is404?<Page404 />:(<section className="p-6 max-w-6xl w-full">
-          {post.isReady ? (
-            <div>
-              <div className="head flex items-center justify-between">
-                <div className="flex items-center ">
-                  <img
-                    src={post.user.profile}
-                    alt={`${post.user.name}'s image`}
-                    className="w-12 h-12 rounded-full "
-                  />
+        {is404 ? (
+          <Page404 />
+        ) : (
+          <section className="p-6 max-w-6xl w-full">
+            {post.isReady ? (
+              <div>
+                <div className="head flex items-center justify-between">
+                  <div className="flex items-center ">
+                    <img
+                      src={post.user.profile}
+                      alt={`${post.user.name}'s image`}
+                      className="w-12 h-12 rounded-full "
+                    />
 
-                  <div className="flex flex-col ml-3 ">
-                    <Link
-                      name={post.user.name}
-                      onClick={setTitle}
-                      to={
-                        data.me.id == post.user.id
-                          ? "/me"
-                          : `/@${post.user.username}`
-                      }
-                      className="text-md sm:text-xl font-semibold  max-w-[13ch] sm:max-w-[25ch] lg:max-w-[50ch]"
-                    >
-                      {post.user.name}
-                    </Link>
-                    <div>
-                      <span className="text-gray-500 whitespace-pre">
-                        {timeSince(post.date)}
-                      </span>
-                      <span className="text-gray-500 mx-1 hidden sm:inline">
-                        •
-                      </span>
-                      <span className="text-gray-500 whitespace-pre hidden sm:inline">
-                        {Math.ceil(cleanMd(post.text).split(" ").length / 200)}{" "}
-                        min <span className="hidden md:inline">read</span>
-                      </span>
+                    <div className="flex flex-col ml-3 ">
+                      <Link
+                        name={post.user.name}
+                        onClick={setTitle}
+                        to={
+                          data.me.id == post.user.id
+                            ? "/me"
+                            : `/@${post.user.username}`
+                        }
+                        className="text-md sm:text-xl font-semibold  max-w-[13ch] sm:max-w-[25ch] lg:max-w-[50ch]"
+                      >
+                        {post.user.name}
+                      </Link>
+                      <div>
+                        <span className="text-gray-500 whitespace-pre">
+                          {timeSince(post.date)}
+                        </span>
+                        <span className="text-gray-500 mx-1 hidden sm:inline">
+                          •
+                        </span>
+                        <span className="text-gray-500 whitespace-pre hidden sm:inline">
+                          {Math.ceil(
+                            cleanMd(post.text).split(" ").length / 200
+                          )}{" "}
+                          min <span className="hidden md:inline">read</span>
+                        </span>
+                      </div>
                     </div>
                   </div>
+                  {data.me.id == post.user.id ? (
+                    <Link
+                      to={`/write/${post.id}`}
+                      className="py-1 px-3 rounded-full active:scale-[0.98] transition-all border-2 border-gray-900 "
+                    >
+                      Edit
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={fallow}
+                      className={`py-1 px-3 rounded-full active:scale-[0.98] transition-all border-2 border-indigo-500 focus-visible:scale-110 ${
+                        post.user.fallowed
+                          ? "text-indigo-500  bg-white"
+                          : "text-white bg-indigo-500"
+                      } `}
+                    >
+                      {post.user.fallowed ? "Unfallow" : "Fallow"}
+                    </button>
+                  )}
                 </div>
-                {data.me.id == post.user.id ? (
-                  <Link
-                    to={`/write/${post.id}`}
-                    className="py-1 px-3 rounded-full active:scale-[0.98] transition-all border-2 border-gray-900 "
-                  >
-                    Edit
-                  </Link>
-                ) : (
-                  <button
-                    onClick={fallow}
-                    className={`py-1 px-3 rounded-full active:scale-[0.98] transition-all border-2 border-indigo-500 focus-visible:scale-110 ${
-                      post.user.fallowed
-                        ? "text-indigo-500  bg-white"
-                        : "text-white bg-indigo-500"
-                    } `}
-                  >
-                    {post.user.fallowed ? "Unfallow" : "Fallow"}
-                  </button>
-                )}
-              </div>
 
-              <div className="tags flex mt-3 items-center justify-between">
-                <div className="relative flex items-center whitespace-pre w-[calc(100%-1rem)] overflow-hidden  after:bg-gradient-to-l after:from-white after:to-transparent after:right-0 after:absolute after:h-full after:w-6">
-                  {post.tags.map((i) => (
-                    <Tag tag={i} key={i.id} />
-                  ))}
+                <div className="tags flex mt-3 items-center justify-between">
+                  <div className="relative flex items-center whitespace-pre w-[calc(100%-1rem)] overflow-hidden  after:bg-gradient-to-l after:from-white after:to-transparent after:right-0 after:absolute after:h-full after:w-6">
+                    {post.tags.map((i) => (
+                      <Tag tag={i} key={i.id} />
+                    ))}
+                  </div>
+                  <div className="flex">
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(
+                          `${window.location.origin}/@${post.user.username}/${post.slug}`
+                        );
+                        showMsg("Link copied");
+                      }}
+                      className="focus-visible:scale-110"
+                    >
+                      <i className="bi bi-link-45deg p-1 cursor-pointer mx-1"></i>
+                    </button>
+                    <button
+                      onClick={bookmark}
+                      className="flex focus-visible:scale-110"
+                    >
+                      <i
+                        className={`bi bi-bookmark-${
+                          post.bookmark ? "fill" : "plus"
+                        } p-1 cursor-pointer mx-1 `}
+                      ></i>
+                    </button>
+                  </div>
                 </div>
-                <div className="flex">
+
+                <article
+                  dir="auto"
+                  className="mt-2"
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(
+                      marked.parse("# " + post.title + "\n" + post.text)
+                    ),
+                  }}
+                />
+
+                <div className="flex mt-6 items-center justify-around text-xl">
                   <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(
-                        `${window.location.origin}/@${post.user.username}/${post.slug}`
-                      );
-                      showMsg("Link copied");
-                    }}
-                    className="focus-visible:scale-110"
+                    className="mr-2 focus-visible:scale-110"
+                    onClick={like}
                   >
-                    <i className="bi bi-link-45deg p-1 cursor-pointer mx-1"></i>
+                    <i
+                      className={`bi bi-heart${
+                        post.liked ? "-fill" : ""
+                      } pl-0 p-1 text-gray-700`}
+                    ></i>
+                    <span className="py-1 text-gray-500 text-md">
+                      {nFormatter(post.likes)}
+                    </span>
                   </button>
                   <button
+                    className="mr-2 focus-visible:scale-110"
+                    onClick={() => setShowComments(true)}
+                  >
+                    <i className="bi-chat p-1 text-gray-700"></i>
+                    <span className="py-1 text-gray-500 text-md">
+                      {nFormatter(post.comments)}
+                    </span>
+                  </button>
+                  {showComments ? <Container /> : ""}
+                  <button
+                    className="mr-2 focus-visible:scale-110"
                     onClick={bookmark}
-                    className="flex focus-visible:scale-110"
                   >
                     <i
                       className={`bi bi-bookmark-${
                         post.bookmark ? "fill" : "plus"
-                      } p-1 cursor-pointer mx-1 `}
+                      } p-1 cursor-pointer mx-1  text-gray-700`}
                     ></i>
+                    {/* <i className="bi bi-three-dots pr-0 p-1 cursor-pointer mx-1 text-gray-700"></i> */}
                   </button>
                 </div>
               </div>
+            ) : (
+              <div>
+                <div className="head flex items-center justify-between">
+                  <div className="flex items-center overflow-hidden fadeInLoad relative">
+                    <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden relative" />
 
-              <article
-                dir="auto"
-                className="mt-2"
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(
-                    marked.parse("# " + post.title + "\n" + post.text)
-                  ),
-                }}
-              />
-
-              <div className="flex mt-6 items-center justify-around text-xl">
-                <button className="mr-2 focus-visible:scale-110" onClick={like}>
-                  <i
-                    className={`bi bi-heart${
-                      post.liked ? "-fill" : ""
-                    } pl-0 p-1 text-gray-700`}
-                  ></i>
-                  <span className="py-1 text-gray-500 text-md">
-                    {nFormatter(post.likes)}
-                  </span>
-                </button>
-                <button
-                  className="mr-2 focus-visible:scale-110"
-                  onClick={() => setShowComments(true)}
-                >
-                  <i className="bi-chat p-1 text-gray-700"></i>
-                  <span className="py-1 text-gray-500 text-md">
-                    {nFormatter(post.comments)}
-                  </span>
-                </button>
-                {showComments ? <Container /> : ""}
-                <button
-                  className="mr-2 focus-visible:scale-110"
-                  onClick={bookmark}
-                >
-                  <i
-                    className={`bi bi-bookmark-${
-                      post.bookmark ? "fill" : "plus"
-                    } p-1 cursor-pointer mx-1  text-gray-700`}
-                  ></i>
-                  {/* <i className="bi bi-three-dots pr-0 p-1 cursor-pointer mx-1 text-gray-700"></i> */}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div>
-              <div className="head flex items-center justify-between">
-                <div className="flex items-center overflow-hidden fadeInLoad relative">
-                  <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden relative" />
-
-                  <div className="flex flex-col ml-3">
-                    <div className="max-w-[19ch] sm:max-w-[25ch] lg:max-w-[50ch] h-4 bg-gray-200 rounded-full " />
-                    <div className="flex mt-1 items-center">
-                      <div className="bg-gray-200 h-3 rounded-full w-16" />
-                      <span className="text-gray-200 mx-1">•</span>
-                      <div className="bg-gray-200 h-3 rounded-full w-16" />
+                    <div className="flex flex-col ml-3">
+                      <div className="max-w-[19ch] sm:max-w-[25ch] lg:max-w-[50ch] h-4 bg-gray-200 rounded-full " />
+                      <div className="flex mt-1 items-center">
+                        <div className="bg-gray-200 h-3 rounded-full w-16" />
+                        <span className="text-gray-200 mx-1">•</span>
+                        <div className="bg-gray-200 h-3 rounded-full w-16" />
+                      </div>
                     </div>
+                  </div>
+
+                  <div
+                    className={`py-1 px-3 rounded-full bg-gray-200 relative fadeInLoad overflow-hidden  w-20 h-8`}
+                  />
+                </div>
+
+                <div className="tags flex mt-3 items-center justify-between">
+                  <div className="relative flex items-center whitespace-pre w-[calc(100%-1rem)] overflow-hidden  after:bg-gradient-to-l after:from-white after:to-transparent after:right-0 after:absolute after:h-full after:w-6">
+                    {[1, 2, 3, 4].map((i) => (
+                      <Tag loading={true} key={i} />
+                    ))}
                   </div>
                 </div>
 
-                <div
-                  className={`py-1 px-3 rounded-full bg-gray-200 relative fadeInLoad overflow-hidden  w-20 h-8`}
-                />
-              </div>
+                <article className="mt-2">
+                  <div className="my-4 mb-2 w-1/2 h-5 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
 
-              <div className="tags flex mt-3 items-center justify-between">
-                <div className="relative flex items-center whitespace-pre w-[calc(100%-1rem)] overflow-hidden  after:bg-gradient-to-l after:from-white after:to-transparent after:right-0 after:absolute after:h-full after:w-6">
-                  {[1, 2, 3, 4].map((i) => (
-                    <Tag loading={true} key={i} />
-                  ))}
-                </div>
-              </div>
+                  <div className="my-4 mb-2 w-1/2 h-5 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="mb-3 w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
 
-              <article className="mt-2">
-                <div className="my-4 mb-2 w-1/2 h-5 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="my-3 rounded-xl bg-gray-200 relative overflow-hidden fadeInLoad w-full h-64" />
 
-                <div className="my-4 mb-2 w-1/2 h-5 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="mb-3 w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="mt-2 w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="mb-3 w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
 
-                <div className="my-3 rounded-xl bg-gray-200 relative overflow-hidden fadeInLoad w-full h-64" />
+                  <div className="my-4 mb-2 w-1/2 h-5 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="mb-3 w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
 
-                <div className="mt-2 w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="mb-3 w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="my-3 rounded-xl bg-gray-200 relative overflow-hidden fadeInLoad w-full h-64" />
 
-                <div className="my-4 mb-2 w-1/2 h-5 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="mb-3 w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="mt-2 w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="mb-3 w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
 
-                <div className="my-3 rounded-xl bg-gray-200 relative overflow-hidden fadeInLoad w-full h-64" />
-
-                <div className="mt-2 w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="mb-3 w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-
-                <div className="my-4 mb-2 w-1/2 h-5 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-                <div className="mb-3 w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
-              </article>
-            </div>
-          )}
-
-          <div className="reccomeneds mt-14">
-            {post.isReady ? (
-              <h1 className="text-3xl border-b-2 border-gray-300 mb-4 py-2">
-                More From
-                <Link
-                  name={post.user.name}
-                  onClick={setTitle}
-                  to={
-                    data.me.id == post.user.id
-                      ? "/me"
-                      : `/@${post.user.username}`
-                  }
-                  className="text-indigo-500 mx-1"
-                >
-                  {post.user.name}
-                </Link>
-              </h1>
-            ) : (
-              <div className="border-b-2 border-gray-300 mb-4 py-2">
-                <div className="h-6 w-3/4 bg-gray-200 overflow-hidden relative fadeInLoad rounded-full" />
+                  <div className="my-4 mb-2 w-1/2 h-5 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="w-full h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                  <div className="mb-3 w-3/4 h-3 my-1 rounded-full bg-gray-200 fadeInLoad relative overflow-hidden" />
+                </article>
               </div>
             )}
 
-            <div id="postsContainer">
-              {posts.isReady
-                ? posts.items.map((p) => <Post post={p} key={p.id} onTitle={getPost} />)
-                : [1, 2, 3, 4, 5].map((i) => <Post loading={true} key={i} />)}
-              {posts.isReady && posts.hasNext ? <Loading /> : ""}
+            <div className="reccomeneds mt-14">
+              {post.isReady ? (
+                <h1 className="text-3xl border-b-2 border-gray-300 mb-4 py-2">
+                  More From
+                  <Link
+                    name={post.user.name}
+                    onClick={setTitle}
+                    to={
+                      data.me.id == post.user.id
+                        ? "/me"
+                        : `/@${post.user.username}`
+                    }
+                    className="text-indigo-500 mx-1"
+                  >
+                    {post.user.name}
+                  </Link>
+                </h1>
+              ) : (
+                <div className="border-b-2 border-gray-300 mb-4 py-2">
+                  <div className="h-6 w-3/4 bg-gray-200 overflow-hidden relative fadeInLoad rounded-full" />
+                </div>
+              )}
+
+              <div id="postsContainer">
+                {posts.isReady
+                  ? posts.items.map((p) => (
+                      <Post post={p} key={p.id} onTitle={getPost} />
+                    ))
+                  : [1, 2, 3, 4, 5].map((i) => <Post loading={true} key={i} />)}
+                {posts.isReady && posts.hasNext ? <Loading /> : ""}
+              </div>
             </div>
-          </div>
-        </section>)}
+          </section>
+        )}
       </main>
     </main>
   );

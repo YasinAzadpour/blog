@@ -47,5 +47,9 @@ urlpatterns = [
     path('search-tags', search_tags, name='search_tags'),
     path('search-users', search_users, name='search_users'),
     path('search-posts', search_posts, name='search_posts'),
-
+    path('base/', base_home, name='base_home'),
+    path('base/search', base_search, name='base_search'),
+    path('base/bookmarks', base_bookmarks, name='base_bookmarks'),
+    path('base/me', base_me, name='base_me'),
+    path('base/@<username>', base_user, name='base_user'),
 ]
