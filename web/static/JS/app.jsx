@@ -1049,6 +1049,8 @@ const TagView = ({}) => {
   const [tag, setTag] = useState({});
   const [posts, setPosts] = useState({ items: [], hasNext: true });
   const [data, setData] = useContext(Context);
+  const [is404, setIs404] = useState(false);
+
   const url = useParams();
 
   const getTag = () => {
@@ -1063,8 +1065,11 @@ const TagView = ({}) => {
           showMsg("An unknown error has occurred");
         }
       },
-      error: () => {
-        showMsg("An unknown network error has occurred");
+      error: (xhr) => {
+        if (xhr.status == 404){
+          setIs404(true);
+        }else{
+        showMsg("An unknown network error has occurred");}
       },
     });
   };
@@ -1138,7 +1143,7 @@ const TagView = ({}) => {
   return (
     <main>
       <main className="mt-16 mb-16 sm:m-0 sm:ml-16 flex items-center justify-center">
-        <section className="p-6 max-w-6xl w-full">
+        {is404?<Page404 />:(<section className="p-6 max-w-6xl w-full">
           {tag.isReady ? (
             <div className="flex items-center justify-between">
               <div className="flex items-center">
@@ -1203,7 +1208,7 @@ const TagView = ({}) => {
               : [1, 2, 3, 4, 5].map((i) => <Post loading={true} key={i} />)}
             {posts.hasNext && posts.isReady ? <Loading /> : ""}
           </div>
-        </section>
+        </section>)}
       </main>
     </main>
   );
@@ -1725,6 +1730,7 @@ const WriteView = ({}) => {
   const [topTags, setTopTags] = useState({ items: [], hasNext: true });
   const [srchTag, setSrchTag] = useState("");
   const [saved, setSaved] = useState(false);
+  const [is404, setIs404] = useState(false);
 
   const url = useParams();
   const [post, setPost] = useState({
@@ -1775,9 +1781,12 @@ const WriteView = ({}) => {
           showMsg("An unknown error has occurred");
         }
       },
-      error: () => {
+      error: (xhr) => {
+        if (xhr.status == 404){
+          setIs404(true);
+        }else{
         showMsg("An unknown network error has occurred");
-        setTimeout(getPost, 10000);
+        setTimeout(getPost, 10000);}
       },
     });
   };
@@ -1958,7 +1967,7 @@ const WriteView = ({}) => {
   return (
     <main>
       <main className="mt-16 mb-16 sm:m-0 sm:ml-16 flex items-center justify-center">
-        <section className="p-6 max-w-6xl w-full">
+        {is404?<Page404 />:(<section className="p-6 max-w-6xl w-full">
           <div className="flex items-center justify-between mb-5">
             <div>
               <button className="relative px-4 py-1 border-2 border-gray-300 rounded-full cursor-pointer active:scale-[0.98] active:opacity-90 transition-all focus-visible:scale-110 focus-visible:border-gray-700">
@@ -2198,7 +2207,7 @@ const WriteView = ({}) => {
               </span>
             </div>
           )}
-        </section>
+        </section>)}
       </main>
     </main>
   );
@@ -2627,8 +2636,12 @@ const PeopleView = ({}) => {
         }
       },
       error: () => {
+        if (xhr.status == 404){
+          setIs404(true);
+        }else{
         showMsg("An unknown network error has occurred");
-        setTimeout(getUser, 10000);
+          setTimeout(getUser, 10000);
+        }
       },
     });
   };
@@ -3636,8 +3649,10 @@ const SettingsView = ({}) => {
 const PostDetail = ({}) => {
   const [data, setData] = useContext(Context);
   const [post, setPost] = useState({});
+  const [is404, setIs404] = useState(false);
   const [posts, setPosts] = useState({ items: [], hasNext: true });
   const [showComments, setShowComments] = useState(false);
+
   const url = useParams();
 
   const getPost = (username = url.username, slug = url.postSlug) => {
@@ -3653,9 +3668,12 @@ const PostDetail = ({}) => {
           showMsg("An unknown error has occurred");
         }
       },
-      error: () => {
+      error: (xhr) => {
+        if (xhr.status == 404){
+          setIs404(true);
+        }else{
         showMsg("An unknown network error has occurred");
-        setTimeout(getPost, 10000);
+        setTimeout(getPost, 10000);}      
       },
     });
   };
@@ -4050,7 +4068,7 @@ const PostDetail = ({}) => {
   return (
     <main>
       <main className="mt-16 mb-16 sm:m-0 sm:ml-16 flex items-center justify-center">
-        <section className="p-6 max-w-6xl w-full">
+        {is404?<Page404 />:(<section className="p-6 max-w-6xl w-full">
           {post.isReady ? (
             <div>
               <div className="head flex items-center justify-between">
@@ -4287,8 +4305,25 @@ const PostDetail = ({}) => {
               {posts.isReady && posts.hasNext ? <Loading /> : ""}
             </div>
           </div>
-        </section>
+        </section>)}
       </main>
+    </main>
+  );
+};
+
+const Page404 = () => {
+  return (
+    <main className="flex flex-col items-center justify-center w-full h-[100vh]">
+      <h1 className="text-[140px] sm:text-[240px] font-bold">404</h1>
+      <p>Sorry, this page not found :(</p>
+      <Link
+        name="Home"
+        onClick={setTitle}
+        to="/"
+        className="m-4 block px-8 py-4 text-white bg-gray-900 rounded-full font-bold"
+      >
+        Go Home
+      </Link>
     </main>
   );
 };

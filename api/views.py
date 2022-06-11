@@ -15,7 +15,7 @@ from django.views.decorators.http import require_POST
 from PIL import Image
 from posts.forms import CommentForm, ImageForm, PostForm
 from posts.models import Post, Tag
-
+from django.core.exceptions import ObjectDoesNotExist
 User = get_user_model()
 
 
@@ -257,8 +257,8 @@ def people(request, username):
         user = request.user if request.user.is_authenticated else None
         other = User.objects.get(username=username)
         return JsonResponse({'result': 1, 'user': other.as_json(user)})
-    except User.DoesNotExist:
-        Http404
+    except ObjectDoesNotExist:
+        raise Http404
     
 @require_POST
 def people_posts(request, username):
@@ -271,8 +271,8 @@ def people_posts(request, username):
         data = [i.as_json(user) for i in this_page.object_list]
 
         return JsonResponse({'result': 1, 'items': data, 'hasNext': this_page.has_next()})
-    except User.DoesNotExist:
-        Http404
+    except ObjectDoesNotExist:
+        raise Http404
 
 @require_POST
 def tag(request, name):
@@ -280,8 +280,8 @@ def tag(request, name):
         user = request.user if request.user.is_authenticated else None
         tag = Tag.objects.get(name=name)
         return JsonResponse({'result': 1, 'tag': tag.as_json(user)})
-    except Tag.DoesNotExist:
-        Http404
+    except ObjectDoesNotExist:
+        raise Http404
 
 @require_POST
 def tag_posts(request, name):
@@ -294,8 +294,8 @@ def tag_posts(request, name):
         data = [i.as_json(user) for i in this_page.object_list]
 
         return JsonResponse({'result': 1, 'items': data, 'hasNext': this_page.has_next()})
-    except Tag.DoesNotExist:
-        Http404
+    except ObjectDoesNotExist:
+        raise Http404
 
 @require_POST
 def top_tags(request):
@@ -367,8 +367,8 @@ def post_detail(request, username, slug):
         other = User.objects.get(username=username)
         post = Post.objects.get(slug=slug, user=other)
         return JsonResponse({'result': 1, 'post': post.as_json(user)})
-    except User.DoesNotExist or Post.DoesNotExist:
-        Http404
+    except ObjectDoesNotExist:
+        raise Http404
 
 @require_POST
 def post_status(request, id):
@@ -383,8 +383,8 @@ def post_status(request, id):
             return JsonResponse({'result': 1, 'isPub': post.published})
 
         return JsonResponse({'result': 0})
-    except Post.DoesNotExist:
-        Http404
+    except ObjectDoesNotExist:
+        raise Http404
 
 @require_POST
 def post_detail_with_id(request, id):
@@ -396,8 +396,8 @@ def post_detail_with_id(request, id):
             return JsonResponse(post.as_json(user)|{'result': 1})
 
         return JsonResponse({'result': 0})
-    except Post.DoesNotExist:
-        Http404
+    except ObjectDoesNotExist:
+        raise Http404
 
 @require_POST
 def bookmarks(request):
