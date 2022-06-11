@@ -156,4 +156,7 @@ class Comment(models.Model):
 
     def __str__(self):
         return f'{self.user.name} > {self.post.title}'
-    
+
+class Image(models.Model):
+    user = models.ForeignKey('accounts.MyUser', on_delete=models.CASCADE, related_name="user_images")
+    image = models.ImageField(upload_to='images/')

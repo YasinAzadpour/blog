@@ -1789,8 +1789,33 @@ const WriteView = ({}) => {
     setPost({ ...post, ["date"]: new Date().getTime() });
     setPost({ ...post, [e.target.name]: e.target.value });
   };
-  const handleUpload = () => {
-    showMsg("This section still not work");
+  const handleUpload = (e) => {
+    showMsg("Processing...");
+    const [file] = e.target.files;
+    const pyload = new FormData();
+    pyload.append("image", file);
+    pyload.append("csrfmiddlewaretoken", data.csrfmiddlewaretoken);
+    pyload.append("d", "text");
+    console.log(file)
+    $.ajax({
+      method: "POST",
+      url: "/api/upload",
+      data: pyload,
+      contentType: false,
+      processData: false,
+      success: (r) => {
+        if (r.result) {
+          navigator.clipboard.writeText(r.link)
+          showMsg("Image url copied");
+        } else {
+          showMsg(r.image || "An unknown error has occurred");
+        }
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+      },
+    });
+  
   };
 
   const status = () => {
@@ -1829,7 +1854,7 @@ const WriteView = ({}) => {
     if (post.title && post.text) {
       let payload = { ...post, ["slug"]: post.title.replace(/\s+/g, "-") };
       payload["tags"] = "";
-      post.tags.map((i) => {
+      (post.tags||[]).map((i) => {
         payload["tags"] += ` . ${i.id}`;
       });
 
@@ -1910,16 +1935,15 @@ const WriteView = ({}) => {
         <section className="p-6 max-w-6xl w-full">
           <div className="flex items-center justify-between mb-5">
             <button
-              onClick={handleUpload}
               className="relative px-4 py-1 border-2 border-gray-300 rounded-full cursor-pointer active:scale-[0.98] active:opacity-90 transition-all focus-visible:scale-110 focus-visible:border-gray-700"
             >
               Upload
-              {/* <input
+              <input
                 type="file"
                 accept="image/*"
-                onClick={handleUpload}
+                onChange={handleUpload}
                 className="cursor-pointer w-full h-full opacity-0 absolute right-0 bottom-0"
-              /> */}
+              />
             </button>
             <div className="flex">
               <button

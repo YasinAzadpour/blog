@@ -27,6 +27,7 @@ urlpatterns = [
     path('me/bookmarks', bookmarks, name='bookmarks'),
     path('me/edit', edit, name='edit'),
     path('fallowings', fallowings_posts, name='fallowings_posts'),
+    path('upload', upload_image, name='upload_image'),
 
     # for all users 
     path('accounts/login', sign_in, name='sign_in'),

@@ -3,6 +3,7 @@ import re
 
 import numpy as np
 from accounts.forms import SignUpForm, UpdateUser
+from django.conf import settings
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.sessions.models import Session
@@ -12,7 +13,7 @@ from django.http.response import JsonResponse
 from django.middleware import csrf
 from django.views.decorators.http import require_POST
 from PIL import Image
-from posts.forms import PostForm, CommentForm
+from posts.forms import CommentForm, ImageForm, PostForm
 from posts.models import Post, Tag
 
 User = get_user_model()
@@ -435,6 +436,21 @@ def add_comment(request):
     
     return JsonResponse({'result': 0})
 
+@require_POST
+def upload_image(request):
+    user = request.user
+    if user.is_authenticated:
+        if user.images_size <= settings.MAX_USER_UPLOAD:
+            form  = ImageForm({'user': user}, request.FILES)
+            if form.is_valid():
+                image = form.save()
+                return JsonResponse({'result': 1, 'link': image.image.url})
+
+            return JsonResponse(errors_to_json(form))
+
+        return JsonResponse({'result': 0, 'image': 'Your upload limited Go Pro'})
+        
+    return JsonResponse({'result': 0})
 
 @require_POST
 def write(request):

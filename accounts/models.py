@@ -40,6 +40,14 @@ class MyUser(AbstractUser):
         return self.bookmarks_post.all().order_by('-date')
 
     @property
+    def images(self):
+        return self.user_images.all()
+
+    @property
+    def images_size(self):
+        return sum([i.image.size for i in self.images])
+
+    @property
     def fallowings(self):
         return self.fallowing_users.all()
 

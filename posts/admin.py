@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
-from .models import Post, Tag, Comment
+from .models import Post, Tag, Comment, Image
 
 
 @admin.register(Post)
@@ -16,3 +16,4 @@ class TagAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 admin.site.register(Comment)
+admin.site.register(Image)

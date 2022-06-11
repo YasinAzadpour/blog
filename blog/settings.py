@@ -128,6 +128,7 @@ MEDIA_ROOT = BASE_DIR/'web/media'
 
 PROFILE_SIZE = (400,400)
 USER_PATH = 'web/media/users'
+MAX_USER_UPLOAD = 100_000_000 # 100MB
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
