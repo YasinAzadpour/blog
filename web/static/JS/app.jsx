@@ -50,7 +50,6 @@ const setTitle = (e) => {
 };
 
 const timeSince = (date) => {
-
   var seconds = Math.floor((new Date() - new Date(date).getTime()) / 1000);
 
   var interval = seconds / 31536000;
@@ -133,14 +132,14 @@ const Auth = ({ page }) => {
   const [data, setData] = useContext(Context);
 
   const about = {
-    "login": {
+    login: {
       url: "/accounts/login",
       help: "create new account",
       helpurl: "/accounts/join",
       about: "",
       apiurl: "/api/accounts/login",
     },
-    "join": {
+    join: {
       url: "/accounts/join",
       help: "already have account",
       helpurl: "/accounts/login",
@@ -215,7 +214,7 @@ const Auth = ({ page }) => {
         onSubmit={handleSubmit}
       >
         <h1 className="text-2xl font-medium my-4">
-          {status[0].toUpperCase()+status.slice(1)}
+          {status[0].toUpperCase() + status.slice(1)}
         </h1>
         {about[status]["about"] && (
           <p className="p2-1 pb-2 text-slate-600">{about[status]["about"]}</p>
@@ -292,7 +291,7 @@ const Auth = ({ page }) => {
             isLoading ? "opacity-50 cursor-wait" : ""
           }`}
         >
-          {status[0].toUpperCase()+status.slice(1) + (isLoading ? "..." : "")}
+          {status[0].toUpperCase() + status.slice(1) + (isLoading ? "..." : "")}
         </button>
         <Link
           name={status}
@@ -397,11 +396,11 @@ const Navbar = ({ state, loading }) => {
           </Link>
 
           <Link
-            name={data.me.id ? "Write" : null}
+            name={data.me.id ? "Write" : ""}
             onClick={(e) =>
               data.me.id ? setTitle(e) : showMsg("Please login")
             }
-            to={data.me.id ? "/write" : null}
+            to={data.me.id ? "/write" : ""}
             tooltip="Write"
             className={`px-4 m-2 text-2xl hidden sm:flex  items-center justify-center cursor-pointe sm:after:absolute sm:after:left-[100%] sm:after:py-1 sm:after:px-2 sm:after:bg-gray-900 sm:after:rounded-lg sm:after:text-base sm:after:flex sm:after:items-center sm:after:justify-center sm:after:border-[1px] sm:after:border-gray-700 sm:after:text-white sm:after:opacity-0 sm:after:-translate-y-3 hover:sm:after:translate-y-0 hover:sm:after:opacity-100 hover:sm:after:transition-all sm:after:transition-none after:pointer-events-none sm:after:content-[attr(tooltip)] focus-visible:scale-110  focus-visible:text-gray-900 ${
               state == "Write" ? "text-gray-900" : "text-gray-500"
@@ -698,8 +697,8 @@ const Post = ({ post = {}, loading }) => {
             </button>
 
             {/* <i className="bi bi-three-dots pr-0 p-1 cursor-pointer mx-1"></i>
-            <ul class="absolute right-1/2 bottom-1/2 rounded-xl shadow-xl bg-gray-100 overflow-hidden">
-              <li class="hover:bg-gray-200">Share this post</li>
+            <ul className="absolute right-1/2 bottom-1/2 rounded-xl shadow-xl bg-gray-100 overflow-hidden">
+              <li className="hover:bg-gray-200">Share this post</li>
               <li>Not interseting</li>
               <li>Block user</li>
             </ul> */}
@@ -919,23 +918,39 @@ const Home = ({}) => {
       <main className="mt-16 mb-16 sm:m-0 sm:ml-16 flex items-center justify-center">
         <section className="p-6 max-w-6xl w-full">
           {data.me.id ? (
-              <div id="tagsContainer" className="overflow-auto ml-3 flex items-center whitespace-pre">
-                {tags.isReady
-                  ? tags.items.map((i) => <Tag tag={i} key={i.id} />)
-                  : [1, 2, 3].map((i) => <Tag loading={true} key={i} />)}
-                {tags.hasNext && tags.isReady ? <span className="mx-4 text-xl loading">...</span> : ""}
-              </div>
+            <div
+              id="tagsContainer"
+              className="overflow-auto ml-3 flex items-center whitespace-pre"
+            >
+              {tags.isReady
+                ? tags.items.map((i) => <Tag tag={i} key={i.id} />)
+                : [1, 2, 3].map((i) => <Tag loading={true} key={i} />)}
+              {tags.hasNext && tags.isReady ? (
+                <span className="mx-4 text-xl loading">...</span>
+              ) : (
+                ""
+              )}
+            </div>
           ) : (
             ""
           )}
           {data.me.id ? (
-            <div id="fallowingUsersContainer" className="py-2 my-4 flex overflow-auto">
+            <div
+              id="fallowingUsersContainer"
+              className="py-2 my-4 flex overflow-auto"
+            >
               {fallowingUsers.isReady
                 ? fallowingUsers.items.map((i) => (
                     <Fallowing user={i} key={i.id} />
                   ))
                 : [1, 2, 3].map((i) => <Fallowing loading={true} key={i} />)}
-                {fallowingUsers.hasNext && fallowingUsers.isReady ? <div className="h-12 w-12 text-xl loading px-4"><span className="m-auto">...</span></div> : ""}
+              {fallowingUsers.hasNext && fallowingUsers.isReady ? (
+                <div className="h-12 w-12 text-xl loading px-4">
+                  <span className="m-auto">...</span>
+                </div>
+              ) : (
+                ""
+              )}
             </div>
           ) : (
             ""
@@ -1488,7 +1503,7 @@ const SearchView = ({}) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           if (searchValue.replace(/\s+/g, "").length) {
-              search();
+            search();
           } else {
             if (state == "posts") {
               getTopPosts();
@@ -1568,7 +1583,9 @@ const SearchView = ({}) => {
                 ? state == "posts"
                   ? posts.isReady
                     ? posts.items.map((i) => <Post post={i} key={i.id} />)
-                    : [1, 2, 3, 4, 5].map((i) => <Post loading={true} key={i} />)
+                    : [1, 2, 3, 4, 5].map((i) => (
+                        <Post loading={true} key={i} />
+                      ))
                   : state == "users"
                   ? users.isReady
                     ? users.items.map((i) => (
@@ -1590,7 +1607,9 @@ const SearchView = ({}) => {
                   : [1, 2, 3, 4, 5].map((i) => <Post loading={true} key={i} />)
                 : state == "users"
                 ? topUsers.isReady
-                  ? topUsers.items.map((i) => <PeopleItem user={i} key={i.id} />)
+                  ? topUsers.items.map((i) => (
+                      <PeopleItem user={i} key={i.id} />
+                    ))
                   : [1, 2, 3, 4, 5].map((i) => (
                       <PeopleItem loading={true} key={i} />
                     ))
@@ -1609,7 +1628,6 @@ const SearchView = ({}) => {
                 (state == "users" && topUsers.hasNext && topUsers.isReady)) && (
                 <Loading />
               )}
-       
             </div>
           </div>
         </section>
@@ -1649,9 +1667,7 @@ const BookmarkView = ({}) => {
   };
 
   useEffect(() => {
-    const lastChild = document.querySelector(
-      "#bookmarksContainer .loading"
-    );
+    const lastChild = document.querySelector("#bookmarksContainer .loading");
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -1869,16 +1885,14 @@ const WriteView = ({}) => {
     });
   };
   useEffect(() => {
-    const lastChild = document.querySelector(
-      "#tagsContainer .loading"
-    );
-    console.log(lastChild)
+    const lastChild = document.querySelector("#tagsContainer .loading");
+    console.log(lastChild);
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           if (srchTag.replace(/\W+/g, "").length && crntTags.hasNext) {
-            searchTag({ target: {value: srchTag} }, true);
+            searchTag({ target: { value: srchTag } }, true);
           } else {
             getTopTags();
           }
@@ -1888,7 +1902,7 @@ const WriteView = ({}) => {
     if (lastChild) {
       observer.observe(lastChild);
     }
-  }, [srchTag,topTags,crntTags]);
+  }, [srchTag, topTags, crntTags]);
 
   return (
     <main>
@@ -1955,7 +1969,8 @@ const WriteView = ({}) => {
 
               <div className="tags flex mt-3 items-center justify-between">
                 <div className="relative flex items-center whitespace-pre w-[calc(100%-1rem)] overflow-hidden  after:bg-gradient-to-l after:from-white after:to-transparent after:right-0 after:absolute after:h-full after:w-6">
-                  {post.tags && post.tags.map((i) => <Tag tag={i} key={i.id} />)}
+                  {post.tags &&
+                    post.tags.map((i) => <Tag tag={i} key={i.id} />)}
                 </div>
               </div>
 
@@ -1999,7 +2014,7 @@ const WriteView = ({}) => {
                 <div className="">
                   {post.tags &&
                     post.tags.map((i) => (
-                      <span className="p-1 border-b-[1px] border-gray-300 mr-2">
+                      <span key={i.id} className="p-1 border-b-[1px] border-gray-300 mr-2">
                         <span className={`text-${genColor(i.id)}`}>
                           #<span className="ml-1 text-gray-700">{i.name}</span>
                         </span>
@@ -2020,7 +2035,7 @@ const WriteView = ({}) => {
                 <div className="relative group mt-2 sm:mt-0">
                   {!post.tags || post.tags.length < 3 ? (
                     <input
-                      autocomplete="none"
+                      autoComplete="none"
                       type="text"
                       id="tagInput"
                       className="w-full"
@@ -2034,14 +2049,17 @@ const WriteView = ({}) => {
                   ) : (
                     ""
                   )}
-                  <ul id="tagsContainer" className=" rounded-xl absolute top-[2rem] left-0 bg-gray-100 shadow-xl h-64 overflow-auto opacity-0 pointer-events-none group-focus-within:opacity-100 group-focus-within:pointer-events-auto w-64">
+                  <ul
+                    id="tagsContainer"
+                    className=" rounded-xl absolute top-[2rem] left-0 bg-gray-100 shadow-xl h-64 overflow-auto opacity-0 pointer-events-none group-focus-within:opacity-100 group-focus-within:pointer-events-auto w-64"
+                  >
                     {(
                       avTags() ||
                       (!srchTag.includes(" ")
                         ? [{ id: srchTag, name: srchTag }]
                         : [])
                     ).map((i) => (
-                      <li>
+                      <li key={i.id}>
                         <button
                           onClick={() => {
                             setPost({
@@ -2076,7 +2094,14 @@ const WriteView = ({}) => {
                         </button>
                       </li>
                     ))}
-                    {(topTags.hasNext&&topTags.isReady)||(crntTags.hasNext&&crntTags.isReady)?<div className="w-full py-3 loading text-xl text-center">...</div>:""}
+                    {(topTags.hasNext && topTags.isReady) ||
+                    (crntTags.hasNext && crntTags.isReady) ? (
+                      <div className="w-full py-3 loading text-xl text-center">
+                        ...
+                      </div>
+                    ) : (
+                      ""
+                    )}
                   </ul>
                 </div>
               </div>
@@ -2215,7 +2240,7 @@ const MeView = ({}) => {
           if (r.result) {
             r["items"] = fallowings.items.concat(r.items);
             r["isReady"] = true;
-            console.log(r)
+            console.log(r);
             setFallowings(r);
           } else {
             showMsg("An unexpected error occurred");
@@ -2280,9 +2305,7 @@ const MeView = ({}) => {
     }, [1]);
 
     useEffect(() => {
-      const lastChild = document.querySelector(
-        "#postsContainer .loading"
-      );
+      const lastChild = document.querySelector("#postsContainer .loading");
 
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
@@ -2322,7 +2345,10 @@ const MeView = ({}) => {
             <div className="rounded-full bg-gray-200 w-20 h-1 sm:h-20 sm:w-1"></div>
           </button>
 
-          <div id="itemsContainer" className="overflow-auto h-full sm:ml-4 px-2 pb-2">
+          <div
+            id="itemsContainer"
+            className="overflow-auto h-full sm:ml-4 px-2 pb-2"
+          >
             {sideName == "tags" && tags.isReady
               ? tags.items.map((item) => <TagItem tag={item} key={item.id} />)
               : sideName == "tags"
@@ -3281,7 +3307,7 @@ const SettingsView = ({}) => {
                           type="password"
                           name="old_password"
                           placeholder="Current password"
-                          autocomplete="current-password"
+                          autoComplete="current-password"
                           onChange={manageForm}
                           required={true}
                         />
@@ -3299,7 +3325,7 @@ const SettingsView = ({}) => {
                           type="password"
                           name="new_password1"
                           placeholder="New password"
-                          autocomplete="new-password"
+                          autoComplete="new-password"
                           onChange={manageForm}
                           pattern=".{8,}"
                           required={true}
@@ -3318,7 +3344,7 @@ const SettingsView = ({}) => {
                           type="password"
                           name="new_password2"
                           placeholder="Retype new password"
-                          autocomplete="new-password"
+                          autoComplete="new-password"
                           onChange={manageForm}
                           required={true}
                         />
@@ -3547,7 +3573,7 @@ const PostDetail = ({}) => {
   const [data, setData] = useContext(Context);
   const [post, setPost] = useState({});
   const [posts, setPosts] = useState({ items: [], hasNext: true });
-  // const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(false);
   const url = useParams();
 
   const getPost = (username = url.username, slug = url.postSlug) => {
@@ -3569,32 +3595,33 @@ const PostDetail = ({}) => {
     });
   };
   const getPosts = (username = url.username) => {
-      $.ajax({
-        method: "POST",
-        url: `/api/posts/@${username}`,
-        data: {
-          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
-          page: posts.items.length / 15 + 1,
-        },
-        success: (r) => {
-          if (r.result) {
-            r["items"] = posts.items.concat(r.items);
-            r["isReady"] = true;
-            setPosts(r);
-          } else {
-            showMsg("An unknown error has occurred");
-          }
-        },
-        error: () => {
-          showMsg("An unknown network error has occurred");
-          setTimeout(getPosts, 10000);
-        },
-      });
+    $.ajax({
+      method: "POST",
+      url: `/api/posts/@${username}`,
+      data: {
+        csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+        page: posts.items.length / 15 + 1,
+      },
+      success: (r) => {
+        if (r.result) {
+          r["items"] = posts.items.concat(r.items);
+          r["isReady"] = true;
+          setPosts(r);
+        } else {
+          showMsg("An unknown error has occurred");
+        }
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+        setTimeout(getPosts, 10000);
+      },
+    });
   };
 
   useEffect(() => {
     getPost();
     getPosts();
+    getMyInfo([data, setData]);
   }, [1]);
 
   useEffect(() => {
@@ -3611,59 +3638,6 @@ const PostDetail = ({}) => {
       observer.observe(lastChild);
     }
   }, [posts]);
-
-  // const Comment = ({ comment, loading }) => {
-  //   if (loading) {
-  //     retrun(
-  //       <div className="sm:first:mt-2 px-2 py-2 border-b-2 border-gray-100">
-  //         <div className="flex items-center justify-between">
-  //           <div className="flex items-center w-full fadeInLoad relative overflow-hidden ">
-  //             <div className="h-12 w-12 rounded-full m-1 bg-gray-200 "></div>
-  //             <div className="flex flex-col p-1 w-4/5 ">
-  //               <div className="h-4 w-4/5 bg-gray-200 rounded-full"></div>
-
-  //               <div className="h-3 w-1/5 bg-gray-200 rounded-full mt-1"></div>
-  //             </div>
-  //           </div>
-  //         </div>
-  //         <div className="mt-3 my-1 h-3 w-full rounded-full bg-gray-200 overflow-hidden fadeInLoad relative"></div>
-  //         <div className="my-1 h-3 w-3/4 rounded-full bg-gray-200 overflow-hidden fadeInLoad relative"></div>
-  //       </div>
-  //     );
-  //   } else {
-  //     return (
-  //       <div className="sm:first:mt-2 px-2 py-2 border-b-2 border-gray-100">
-  //         <div className="flex items-center justify-between">
-  //           <div className="flex items-center w-full overflow-hidden">
-  //             <img
-  //               src={comment.user.profile}
-  //               alt={`${comment.user.name}'s image`}
-  //               className="h-12 w-12 rounded-full p-1"
-  //             />
-  //             <div className="flex flex-col p-1 w-full">
-  //               <Link
-  //                 name={comment.user.name}
-  //                 onClick={setTitle}
-  //                 to={`/@${comment.user.username}`}
-  //                 className="text-md w-[80%] truncate"
-  //               >
-  //                 {comment.user.name}
-  //               </Link>
-  //               <span className="text-gray-500 text-sm">
-  //                 {timeSince(comment.date)}
-  //               </span>
-  //             </div>
-  //           </div>
-
-  //           <button className="p-2 flex items-center">
-  //             <i className="bi bi-three-dots text-gray-500"></i>
-  //           </button>
-  //         </div>
-  //         <p className="text-sm mt-1">{comment.text}</p>
-  //       </div>
-  //     );
-  //   }
-  // };
 
   const fallow = () => {
     if (data.me.id) {
@@ -3735,83 +3709,258 @@ const PostDetail = ({}) => {
     }
   };
 
-  // const closeSide = (e) => {
-  //   if (e.target.id == "close") {
-  //     setShowComments(false);
-  //   }
-  // };
+  const closeSide = (e) => {
+    if (e.target.id == "close") {
+      setShowComments(false);
+    }
+  };
+  
+  const Container = ({}) => {
+    const [comments, setComments] = useState({ items: [], hasNext: true });
+    const [replayTo, setReplayTo] = useState(null);
+  
+    const addComment = (e) => {
+      const text = e.target.parentElement.children[1].value;
+      $.ajax({
+        method: "POST",
+        url: "/api/add-comment",
+        data: {
+          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+          text: text,
+          post: post.id,
+          replaied_to: replayTo?replayTo.id:null,
+        },
+        success: (r) => {
+          if (r.result) {
+            $("#commentInput").val("");
+            if(replayTo){
+              setComments({...comments,['items']:comments.items.map((i)=>i.id==r.comment.replaied_to?{...i,['responses']: (i.responses||[]).concat(r.comment)}:i)});
+            }else {
+              const comms = comments.items.copyWithin()
+              comms.unshift(r.comment)
+            setComments({...comments,['items']: comms});
+            }
+            setReplayTo(null);
+          } else {
+            showMsg("An unknown error has occurred");
+          }
+        },
+        error: () => {
+          showMsg("An unknown network error has occurred");
+          setTimeout(addComment, 10000);
+        },
+      });
+    };
 
-  // const addComment = (e) => {
-  //   // send to server
-  //   const text = e.target.parentElement.children[1].value;
-  // };
+    const Comment = ({ comment, loading }) => {
+      if (loading) {
+        return (
+          <div className="sm:first:mt-2 px-2 py-2 border-b-2 border-gray-100">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center w-full fadeInLoad relative overflow-hidden ">
+                <div className="h-12 w-12 rounded-full m-1 bg-gray-200 "></div>
+                <div className="flex flex-col p-1 w-4/5 ">
+                  <div className="h-4 w-4/5 bg-gray-200 rounded-full"></div>
 
-  // const Container = ({}) => {
-  //   const [isReady, setIsReady] = useState(false);
-  //   const [comments, setComments] = useState([]);
+                  <div className="h-3 w-1/5 bg-gray-200 rounded-full mt-1"></div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-3 my-1 h-3 w-full rounded-full bg-gray-200 overflow-hidden fadeInLoad relative"></div>
+            <div className="my-1 h-3 w-3/4 rounded-full bg-gray-200 overflow-hidden fadeInLoad relative"></div>
+          </div>
+        );
+      } else {
+        return (
+          <div className="sm:first:mt-2 px-2 py-2">
+            <div className="border-2 border-gray-100 rounded-lg  px-2 py-1 my-1">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center w-full overflow-hidden">
+                  <img
+                    src={comment.user.profile}
+                    alt={`${comment.user.name}'s image`}
+                    className="h-12 w-12 rounded-full p-1 overflow-hidden"
+                  />
+                  <div className="flex flex-col p-1 max-w-5/6">
+                    <Link
+                      name={comment.user.name}
+                      onClick={setTitle}
+                      to={`/@${comment.user.username}`}
+                      className="text-md w-[80%] truncate"
+                    >
+                      {comment.user.name}
+                    </Link>
+                    <span className="text-gray-500 text-sm">
+                      {timeSince(comment.date)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <p className="text-sm mt-1  text-gray-800">
+                {comment.text}
+                <span
+                  onClick={()=>setReplayTo(comment)}
+                  className="ml-2 pt-2 text-indigo-500 cursor-pointer"
+                >
+                  "Replay"
+                </span>
+              </p>
+            </div>
+            <div className="ml-6 my-2">
+              {(comment.responses||[]).map((i) => (
+                <div
+                  key={i.id}
+                  className="flex items-center w-full justify-start relative"
+                >
+                  {(comment.responses||[]).at(-1).id != i.id ? (
+                    <div className="absolute w-2 border-l-2 border-l-gray-300 h-full left-6 top-0 translate-y-1"></div>
+                  ) : (
+                    ""
+                  )}
+                  <img
+                    src={i.user.profile}
+                    alt={`${i.user.name}'s image`}
+                    className="h-12 w-12 rounded-full p-1 mb-auto mr-2 z-[2] overflow-hidden"
+                  />
+                  <div className="flex flex-col w-[calc(100%-52px)] border-2 border-gray-100 rounded-lg  p-2 my-1">
+                    <Link
+                      name={i.user.name}
+                      onClick={setTitle}
+                      to={`/@${i.user.username}`}
+                      className="text-md w-[80%] truncate"
+                    >
+                      {i.user.name}
+                    </Link>
+                    <span>
+                      <span className="text-gray-500 text-sm">
+                        {timeSince(i.date)}
+                      </span>
+                      <span className="text-gray-400 mx-1">•</span>
+                      <span className="text-gray-500 text-sm">
+                        Replaying to
+                        <Link
+                          name={comment.user.name}
+                          onClick={setTitle}
+                          to={`/@${comment.user.username}`}
+                          className="truncate text-indigo-500 ml-1"
+                        >
+                          @{comment.user.name}
+                        </Link>
+                      </span>
+                    </span>
+                    <p className="text-sm mt-1 text-gray-800">{i.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+    };
 
-  //   useEffect(() => {
-  //     // emulate give from server
-  //     setTimeout(() => {
-  //       setComments([tempcomment]);
-  //       setIsReady(true);
-  //     }, 1000);
-  //   }, [1]);
+    const getComments = () => {
+      $.ajax({
+        method: "POST",
+        url: `/api/comments/${post.id}`,
+        data: {
+          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
+          page: comments.items.length / 15 + 1,
+        },
+        success: (r) => {
+          if (r.result) {
+            r["items"] = comments.items.concat(r.items);
+            r["isReady"] = true;
+            r["load"] = !comments.load;
+            setComments(r);
+          } else {
+            showMsg("An unknown error has occurred");
+          }
+        },
+        error: () => {
+          showMsg("An unknown network error has occurred");
+          setTimeout(getMyInfo, 10000);
+        },
+      });
+    };
+    useEffect(() => {
+      getComments();
+    }, [1]);
 
-  //   return (
-  //     <div
-  //       id="close"
-  //       onClick={closeSide}
-  //       className={`bg-[#00000078] backdrop-blur-sm fixed w-screen h-screen right-0 top-0 flex flex-col-reverse sm:flex-row-reverse z-20 ${
-  //         showComments ? "" : "opacity-0 pointer-events-none"
-  //       }`}
-  //     >
-  //       <div
-  //         className={`${
-  //           showComments
-  //             ? "translate-0"
-  //             : "translate-y-[100%] sm:translate-x-[100%] sm:translate-y-0"
-  //         } transition-all border-2 border-gray-100 flex flex-col bg-white absolute rounded-tr-3xl rounded-tl-3xl w-full h-4/5 sm:rounded-tr-none sm:rounded-bl-3xl sm:h-full sm:w-[28rem]`}
-  //       >
-  //         <button
-  //           id="close"
-  //           className="p-2 w-full flex items-center justify-center sm:w-auto sm:h-full sm:left-0 sm:absolute"
-  //         >
-  //           <div className="rounded-full bg-gray-200 w-20 h-1 sm:h-20 sm:w-1"></div>
-  //         </button>
-  //         <div className="overflow-auto h-full sm:ml-4 px-2 pb-2">
-  //           {isReady
-  //             ? comments.map((i) => <Comment comment={i} id={i.id} />)
-  //             : [1, 2, 3, 4, 5, 6, 6].map((i) => (
-  //                 <Comment loading={true} id={i} />
-  //               ))}
-  //         </div>
-  //         {data.me.id ? (
-  //           <div className="w-full p-2 flex border-t-2 border-gray-100">
-  //             <img
-  //               src={data.me.profile}
-  //               alt={`${data.me.name}'s image`}
-  //               className="rounded-full h-9 w-9 p-1"
-  //             />
-  //             <input
-  //               type="text"
-  //               placeholder="Add a comment"
-  //               className="p-1 w-full"
-  //             />
-  //             <button
-  //               onClick={addComment}
-  //               className="p-1 text-indigo-500 hover:text-indigo-700 "
-  //             >
-  //               Post
-  //             </button>
-  //           </div>
-  //         ) : (
-  //           ""
-  //         )}
-  //       </div>
-  //     </div>
-  //   );
-  // };
+    useEffect(() => {
+      const lastChild = document.querySelector("#tagsContainer .loading");
+  
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            getComments();
+          }
+        });
+      });
+      if (lastChild) {
+        observer.observe(lastChild);
+      }
+    }, [comments.load]);
+    return (
+      <div
+        id="close"
+        onClick={closeSide}
+        className="bg-[#00000078] backdrop-blur-sm fixed w-screen h-screen right-0 top-0 flex flex-col-reverse sm:flex-row-reverse z-20 "
+      >
+        <div className="transition-all border-2 border-gray-100 flex flex-col bg-white absolute rounded-tr-3xl rounded-tl-3xl w-full h-4/5 sm:rounded-tr-none sm:rounded-bl-3xl sm:h-full sm:w-[28rem]">
+          <button
+            id="close"
+            className="p-2 w-full flex items-center justify-center sm:w-auto sm:h-full sm:left-0 sm:absolute"
+          >
+            <div className="rounded-full bg-gray-200 w-20 h-1 sm:h-20 sm:w-1"></div>
+          </button>
+          <div id="tagsContainer" className="overflow-auto h-full sm:ml-4 px-2 pb-2">
+            {comments.isReady
+              ? comments.items.map((i) => <Comment comment={i} key={i.id} />)
+              : [1, 2, 3, 4, 5, 6].map((i) => (
+                  <Comment loading={true} key={i} />
+                ))}
+            {comments.isReady && comments.hasNext ? <Loading /> : ""}
+          </div>
+          {data.me.id ? (
+            <div>
+              {replayTo?(<div className="border-t-2 border-gray-100 w-full py-2 px-3 text-gray-500 text-sm flex justify-between">
+                <span>
+                  Replaying to
+                  <span className="text-indigo-500 ml-2">
+                    @{replayTo.user.username}
+                  </span>
+                </span>
+                <button onClick={() => setReplayTo(null)}>
+                  <i className="bi bi-x-circle-fill text-gray-700"></i>
+                </button>
+              </div>):""}
+              <div className="w-full p-2 flex border-t-2 border-gray-100">
+                <img
+                  src={data.me.profile}
+                  alt={`${data.me.name}'s image`}
+                  className="rounded-full h-9 w-9 p-1"
+                />
+                <input
+                  id="commentInput"
+                  type="text"
+                  placeholder="Add a comment"
+                  className="p-1 w-full"
+                />
+                <button
+                  onClick={addComment}
+                  className="p-1 text-indigo-500 hover:text-indigo-700 "
+                >
+                  Post
+                </button>
+              </div>
+            </div>
+          ) : (
+            ""
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <main>
@@ -3916,14 +4065,14 @@ const PostDetail = ({}) => {
                 </button>
                 <button
                   className="mr-2 focus-visible:scale-110"
-                  onClick={() => showMsg("This session still not work")}
+                  onClick={() => setShowComments(true)}
                 >
                   <i className="bi-chat p-1 text-gray-700"></i>
                   <span className="py-1 text-gray-500 text-md">
                     {nFormatter(post.comments)}
                   </span>
                 </button>
-                {/* {showComments ? <Container /> : ""} */}
+                {showComments ? <Container /> : ""}
                 <button
                   className="mr-2 focus-visible:scale-110"
                   onClick={bookmark}

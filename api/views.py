@@ -12,7 +12,7 @@ from django.http.response import JsonResponse
 from django.middleware import csrf
 from django.views.decorators.http import require_POST
 from PIL import Image
-from posts.forms import PostForm
+from posts.forms import PostForm, CommentForm
 from posts.models import Post, Tag
 
 User = get_user_model()
@@ -406,6 +406,35 @@ def bookmarks(request):
     this_page = p.get_page(num_page)
     data = [i.as_json(user) for i in this_page.object_list]
     return JsonResponse({'result': 1, 'items': data, 'hasNext': this_page.has_next()})
+
+@require_POST
+def get_post_comments(request, id):
+    query  = Post.objects.filter(id=id)
+    if query.exists():
+        post = query.first()
+        p = Paginator(post.comments, 15)
+        num_page = request.POST.get('page',1)
+        this_page = p.get_page(num_page)
+        data = [i.as_json(True) for i in this_page.object_list]
+        return JsonResponse({'result': 1, 'items': data, 'hasNext': this_page.has_next()})
+    return JsonResponse({'result': 0})
+
+
+@require_POST
+def add_comment(request):
+    user = request.user
+    if user.is_authenticated:
+
+        request.POST = clean_data(request.POST)|{'user': user}
+        form  = CommentForm(request.POST)
+        if form.is_valid():
+            c = form.save()
+            return JsonResponse({'result': 1, 'comment': c.as_json(False)})
+
+        return JsonResponse(errors_to_json(form))
+    
+    return JsonResponse({'result': 0})
+
 
 @require_POST
 def write(request):

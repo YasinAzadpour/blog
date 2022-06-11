@@ -66,7 +66,7 @@ class Post(models.Model):
 
     @property
     def comments(self):
-        return self.post_comment.all()
+        return self.post_comment.all().filter(replaied_to=None)
 
     @classmethod
     def fallowings(cls, user):
@@ -147,6 +147,7 @@ class Comment(models.Model):
             'user': self.user.as_json(),
             'text':  self.text,
             'data': self.date,
+            'replaied_to': self.replaied_to.id if self.replaied_to else 0
             }
         if with_res:
             data['responses']= [i.as_json(False) for i in self.responses.all()]
