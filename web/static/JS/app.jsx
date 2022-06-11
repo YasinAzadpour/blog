@@ -688,6 +688,17 @@ const Post = ({ post = {}, loading }) => {
           </div>
 
           <div className="flex relative">
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(
+                  `${window.location.origin}/@${post.user.username}/${post.slug}`
+                );
+                showMsg("Link copied");
+              }}
+              className="focus-visible:scale-110"
+            >
+              <i className="bi bi-link-45deg p-1 cursor-pointer mx-1"></i>
+            </button>
             <button onClick={bookmark} className="focus-visible:scale-110">
               <i
                 className={`bi bi-bookmark-${
@@ -695,13 +706,6 @@ const Post = ({ post = {}, loading }) => {
                 } p-1 cursor-pointer mx-1  `}
               ></i>
             </button>
-
-            {/* <i className="bi bi-three-dots pr-0 p-1 cursor-pointer mx-1"></i>
-            <ul className="absolute right-1/2 bottom-1/2 rounded-xl shadow-xl bg-gray-100 overflow-hidden">
-              <li className="hover:bg-gray-200">Share this post</li>
-              <li>Not interseting</li>
-              <li>Block user</li>
-            </ul> */}
           </div>
         </div>
       )}
@@ -1766,7 +1770,7 @@ const WriteView = ({}) => {
             ...r,
             ["csrfmiddlewaretoken"]: data.csrfmiddlewaretoken,
           });
-          window.history.pushState(null,null,"/write/"+r.id);
+          window.history.pushState(null, null, "/write/" + r.id);
         } else {
           showMsg("An unknown error has occurred");
         }
@@ -1842,12 +1846,12 @@ const WriteView = ({}) => {
     $.ajax({
       method: "POST",
       url: `/api/delete/${post.id}`,
-      data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken},
+      data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken },
       success: (r) => {
         if (r.result) {
           setSaved(false);
           setApiPath("/api/write");
-          window.history.pushState(null,null,"/write");
+          window.history.pushState(null, null, "/write");
           showMsg("Post deleted");
         } else {
           showMsg("An unexpected error occurred");
@@ -1893,7 +1897,7 @@ const WriteView = ({}) => {
             setSaved(true);
             setApiPath(`/api/write/${r.id || post.id}`);
             setPost({ ...post, ["id"]: r.id });
-            window.history.pushState(null,null,"/write/"+(r.id || post.id));
+            window.history.pushState(null, null, "/write/" + (r.id || post.id));
             showMsg("Successfully saved");
           } else {
             setMessages(r);
@@ -1966,13 +1970,17 @@ const WriteView = ({}) => {
                   className="cursor-pointer w-full h-full opacity-0 absolute right-0 bottom-0"
                 />
               </button>
-              {saved?(<button
-                onClick={deletePost}
-                className="ml-2 text-red-500 relative px-4 py-1 border-2 border-gray-300 rounded-full cursor-pointer active:scale-[0.98] active:opacity-90 transition-all focus-visible:scale-110 focus-visible:border-gray-700"
-              >
-                <span className="hidden sm:inline">Delete</span>
-                <i className="bi bi-trash sm:hidden"></i>
-              </button>):""}
+              {saved ? (
+                <button
+                  onClick={deletePost}
+                  className="ml-2 text-red-500 relative px-4 py-1 border-2 border-gray-300 rounded-full cursor-pointer active:scale-[0.98] active:opacity-90 transition-all focus-visible:scale-110 focus-visible:border-gray-700"
+                >
+                  <span className="hidden sm:inline">Delete</span>
+                  <i className="bi bi-trash sm:hidden"></i>
+                </button>
+              ) : (
+                ""
+              )}
             </div>
             <div className="flex">
               <button
@@ -3934,7 +3942,8 @@ const PostDetail = ({}) => {
         },
         success: (r) => {
           if (r.result) {
-            r["items"] = comments.items.concat(r.items);
+            const allId = comments.items.map((i)=>i.id)
+            r["items"] = comments.items.concat(r.items.map((i)=>!allId.includes(i.id)?i:""));
             r["isReady"] = true;
             r["load"] = !comments.load;
             setComments(r);
@@ -4014,6 +4023,8 @@ const PostDetail = ({}) => {
                   className="rounded-full h-9 w-9 p-1"
                 />
                 <input
+                  dir="auto"
+                  maxLength={1000}
                   id="commentInput"
                   type="text"
                   placeholder="Add a comment"
@@ -4103,16 +4114,29 @@ const PostDetail = ({}) => {
                     <Tag tag={i} key={i.id} />
                   ))}
                 </div>
-                <button
-                  onClick={bookmark}
-                  className="flex focus-visible:scale-110"
-                >
-                  <i
-                    className={`bi bi-bookmark-${
-                      post.bookmark ? "fill" : "plus"
-                    } p-1 cursor-pointer mx-1 `}
-                  ></i>
-                </button>
+                <div className="flex">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        `${window.location.origin}/@${post.user.username}/${post.slug}`
+                      );
+                      showMsg("Link copied");
+                    }}
+                    className="focus-visible:scale-110"
+                  >
+                    <i className="bi bi-link-45deg p-1 cursor-pointer mx-1"></i>
+                  </button>
+                  <button
+                    onClick={bookmark}
+                    className="flex focus-visible:scale-110"
+                  >
+                    <i
+                      className={`bi bi-bookmark-${
+                        post.bookmark ? "fill" : "plus"
+                      } p-1 cursor-pointer mx-1 `}
+                    ></i>
+                  </button>
+                </div>
               </div>
 
               <article
