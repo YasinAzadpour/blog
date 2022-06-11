@@ -575,7 +575,7 @@ const Fallowing = ({ user, loading }) => {
   }
 };
 
-const Post = ({ post = {}, loading }) => {
+const Post = ({ post = {}, loading, onTitle=()=>{} }) => {
   const [isBookmark, setIsBookmark] = useState(post.bookmark);
   const [data, setData] = useContext(Context);
 
@@ -658,7 +658,7 @@ const Post = ({ post = {}, loading }) => {
           >
             <Link
               name={post.title}
-              onClick={setTitle}
+              onClick={(e)=>{setTitle(e);onTitle(post.user.username, post.slug)}}
               to={`/@${post.user.username}/${post.slug}`}
               className="hover:underline focus-visible:underline"
             >
@@ -3641,6 +3641,7 @@ const PostDetail = ({}) => {
   const url = useParams();
 
   const getPost = (username = url.username, slug = url.postSlug) => {
+    console.log("Gettings post")
     $.ajax({
       method: "POST",
       url: `/api/@${username}/${slug}`,
@@ -4281,7 +4282,7 @@ const PostDetail = ({}) => {
 
             <div id="postsContainer">
               {posts.isReady
-                ? posts.items.map((p) => <Post post={p} key={p.id} />)
+                ? posts.items.map((p) => <Post post={p} key={p.id} onTitle={getPost} />)
                 : [1, 2, 3, 4, 5].map((i) => <Post loading={true} key={i} />)}
               {posts.isReady && posts.hasNext ? <Loading /> : ""}
             </div>
