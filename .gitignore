@@ -101,3 +101,5 @@ ENV/
 # IDE
 .vscode
 
+web/media/images/
+web/media/users/

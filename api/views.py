@@ -469,8 +469,8 @@ def write(request):
 
 @require_POST
 def edit_post(request,id):
-    user = request.user
-    if user.is_authenticated:
+    try:
+        user = request.user
         tags = proc_tags(request)
         request.POST = clean_data(request.POST)
         post = Post.objects.get(id=id, user=user)
@@ -480,8 +480,19 @@ def edit_post(request,id):
             post = form.save()
             
         return JsonResponse(errors_to_json(form)|{'id': post.id})
-    
-    return JsonResponse({'result': 0})
+    except:
+        return JsonResponse({'result': 0})
+
+@require_POST
+def delete_post(request, id):
+    try:
+        user = request.user
+        post = Post.objects.get(id=id, user=user)
+        post.delete()
+        return JsonResponse({'result': 1})
+    except:
+        return JsonResponse({'result': 0})
+
 
 @require_POST
 def fallow_people(request, username):

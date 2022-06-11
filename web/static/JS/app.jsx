@@ -1766,6 +1766,7 @@ const WriteView = ({}) => {
             ...r,
             ["csrfmiddlewaretoken"]: data.csrfmiddlewaretoken,
           });
+          window.history.pushState(null,null,"/write/"+r.id);
         } else {
           showMsg("An unknown error has occurred");
         }
@@ -1796,7 +1797,7 @@ const WriteView = ({}) => {
     pyload.append("image", file);
     pyload.append("csrfmiddlewaretoken", data.csrfmiddlewaretoken);
     pyload.append("d", "text");
-    console.log(file)
+    console.log(file);
     $.ajax({
       method: "POST",
       url: "/api/upload",
@@ -1805,7 +1806,7 @@ const WriteView = ({}) => {
       processData: false,
       success: (r) => {
         if (r.result) {
-          navigator.clipboard.writeText(r.link)
+          navigator.clipboard.writeText(r.link);
           showMsg("Image url copied");
         } else {
           showMsg(r.image || "An unknown error has occurred");
@@ -1815,7 +1816,6 @@ const WriteView = ({}) => {
         showMsg("An unknown network error has occurred");
       },
     });
-  
   };
 
   const status = () => {
@@ -1828,6 +1828,27 @@ const WriteView = ({}) => {
           setSaved(true);
           setPost({ ...post, ["isPub"]: r.isPub });
           showMsg(`Successfully ${r.isPub ? "Published" : "Drafted"}`);
+        } else {
+          showMsg("An unexpected error occurred");
+        }
+      },
+      error: () => {
+        showMsg("An unknown network error has occurred");
+      },
+    });
+  };
+
+  const deletePost = () => {
+    $.ajax({
+      method: "POST",
+      url: `/api/delete/${post.id}`,
+      data: { csrfmiddlewaretoken: data.csrfmiddlewaretoken},
+      success: (r) => {
+        if (r.result) {
+          setSaved(false);
+          setApiPath("/api/write");
+          window.history.pushState(null,null,"/write");
+          showMsg("Post deleted");
         } else {
           showMsg("An unexpected error occurred");
         }
@@ -1854,7 +1875,7 @@ const WriteView = ({}) => {
     if (post.title && post.text) {
       let payload = { ...post, ["slug"]: post.title.replace(/\s+/g, "-") };
       payload["tags"] = "";
-      (post.tags||[]).map((i) => {
+      (post.tags || []).map((i) => {
         payload["tags"] += ` . ${i.id}`;
       });
 
@@ -1872,6 +1893,7 @@ const WriteView = ({}) => {
             setSaved(true);
             setApiPath(`/api/write/${r.id || post.id}`);
             setPost({ ...post, ["id"]: r.id });
+            window.history.pushState(null,null,"/write/"+(r.id || post.id));
             showMsg("Successfully saved");
           } else {
             setMessages(r);
@@ -1934,17 +1956,24 @@ const WriteView = ({}) => {
       <main className="mt-16 mb-16 sm:m-0 sm:ml-16 flex items-center justify-center">
         <section className="p-6 max-w-6xl w-full">
           <div className="flex items-center justify-between mb-5">
-            <button
-              className="relative px-4 py-1 border-2 border-gray-300 rounded-full cursor-pointer active:scale-[0.98] active:opacity-90 transition-all focus-visible:scale-110 focus-visible:border-gray-700"
-            >
-              Upload
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleUpload}
-                className="cursor-pointer w-full h-full opacity-0 absolute right-0 bottom-0"
-              />
-            </button>
+            <div>
+              <button className="relative px-4 py-1 border-2 border-gray-300 rounded-full cursor-pointer active:scale-[0.98] active:opacity-90 transition-all focus-visible:scale-110 focus-visible:border-gray-700">
+                Upload
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleUpload}
+                  className="cursor-pointer w-full h-full opacity-0 absolute right-0 bottom-0"
+                />
+              </button>
+              {saved?(<button
+                onClick={deletePost}
+                className="ml-2 text-red-500 relative px-4 py-1 border-2 border-gray-300 rounded-full cursor-pointer active:scale-[0.98] active:opacity-90 transition-all focus-visible:scale-110 focus-visible:border-gray-700"
+              >
+                <span className="hidden sm:inline">Delete</span>
+                <i className="bi bi-trash sm:hidden"></i>
+              </button>):""}
+            </div>
             <div className="flex">
               <button
                 onClick={saved ? status : save}
@@ -2038,7 +2067,10 @@ const WriteView = ({}) => {
                 <div className="">
                   {post.tags &&
                     post.tags.map((i) => (
-                      <span key={i.id} className="p-1 border-b-[1px] border-gray-300 mr-2">
+                      <span
+                        key={i.id}
+                        className="p-1 border-b-[1px] border-gray-300 mr-2"
+                      >
                         <span className={`text-${genColor(i.id)}`}>
                           #<span className="ml-1 text-gray-700">{i.name}</span>
                         </span>
@@ -3738,11 +3770,11 @@ const PostDetail = ({}) => {
       setShowComments(false);
     }
   };
-  
+
   const Container = ({}) => {
     const [comments, setComments] = useState({ items: [], hasNext: true });
     const [replayTo, setReplayTo] = useState(null);
-  
+
     const addComment = (e) => {
       const text = e.target.parentElement.children[1].value;
       $.ajax({
@@ -3752,17 +3784,27 @@ const PostDetail = ({}) => {
           csrfmiddlewaretoken: data.csrfmiddlewaretoken,
           text: text,
           post: post.id,
-          replaied_to: replayTo?replayTo.id:null,
+          replaied_to: replayTo ? replayTo.id : null,
         },
         success: (r) => {
           if (r.result) {
             $("#commentInput").val("");
-            if(replayTo){
-              setComments({...comments,['items']:comments.items.map((i)=>i.id==r.comment.replaied_to?{...i,['responses']: (i.responses||[]).concat(r.comment)}:i)});
-            }else {
-              const comms = comments.items.copyWithin()
-              comms.unshift(r.comment)
-            setComments({...comments,['items']: comms});
+            if (replayTo) {
+              setComments({
+                ...comments,
+                ["items"]: comments.items.map((i) =>
+                  i.id == r.comment.replaied_to
+                    ? {
+                        ...i,
+                        ["responses"]: (i.responses || []).concat(r.comment),
+                      }
+                    : i
+                ),
+              });
+            } else {
+              const comms = comments.items.copyWithin();
+              comms.unshift(r.comment);
+              setComments({ ...comments, ["items"]: comms });
             }
             setReplayTo(null);
           } else {
@@ -3823,7 +3865,7 @@ const PostDetail = ({}) => {
               <p className="text-sm mt-1  text-gray-800">
                 {comment.text}
                 <span
-                  onClick={()=>setReplayTo(comment)}
+                  onClick={() => setReplayTo(comment)}
                   className="ml-2 pt-2 text-indigo-500 cursor-pointer"
                 >
                   "Replay"
@@ -3831,12 +3873,12 @@ const PostDetail = ({}) => {
               </p>
             </div>
             <div className="ml-6 my-2">
-              {(comment.responses||[]).map((i) => (
+              {(comment.responses || []).map((i) => (
                 <div
                   key={i.id}
                   className="flex items-center w-full justify-start relative"
                 >
-                  {(comment.responses||[]).at(-1).id != i.id ? (
+                  {(comment.responses || []).at(-1).id != i.id ? (
                     <div className="absolute w-2 border-l-2 border-l-gray-300 h-full left-6 top-0 translate-y-1"></div>
                   ) : (
                     ""
@@ -3912,7 +3954,7 @@ const PostDetail = ({}) => {
 
     useEffect(() => {
       const lastChild = document.querySelector("#tagsContainer .loading");
-  
+
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
@@ -3937,7 +3979,10 @@ const PostDetail = ({}) => {
           >
             <div className="rounded-full bg-gray-200 w-20 h-1 sm:h-20 sm:w-1"></div>
           </button>
-          <div id="tagsContainer" className="overflow-auto h-full sm:ml-4 px-2 pb-2">
+          <div
+            id="tagsContainer"
+            className="overflow-auto h-full sm:ml-4 px-2 pb-2"
+          >
             {comments.isReady
               ? comments.items.map((i) => <Comment comment={i} key={i.id} />)
               : [1, 2, 3, 4, 5, 6].map((i) => (
@@ -3947,17 +3992,21 @@ const PostDetail = ({}) => {
           </div>
           {data.me.id ? (
             <div>
-              {replayTo?(<div className="border-t-2 border-gray-100 w-full py-2 px-3 text-gray-500 text-sm flex justify-between">
-                <span>
-                  Replaying to
-                  <span className="text-indigo-500 ml-2">
-                    @{replayTo.user.username}
+              {replayTo ? (
+                <div className="border-t-2 border-gray-100 w-full py-2 px-3 text-gray-500 text-sm flex justify-between">
+                  <span>
+                    Replaying to
+                    <span className="text-indigo-500 ml-2">
+                      @{replayTo.user.username}
+                    </span>
                   </span>
-                </span>
-                <button onClick={() => setReplayTo(null)}>
-                  <i className="bi bi-x-circle-fill text-gray-700"></i>
-                </button>
-              </div>):""}
+                  <button onClick={() => setReplayTo(null)}>
+                    <i className="bi bi-x-circle-fill text-gray-700"></i>
+                  </button>
+                </div>
+              ) : (
+                ""
+              )}
               <div className="w-full p-2 flex border-t-2 border-gray-100">
                 <img
                   src={data.me.profile}
