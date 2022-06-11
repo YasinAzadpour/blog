@@ -26,7 +26,6 @@ urlpatterns = [
     path('me', me, name='me'),
     path('me/bookmarks', bookmarks, name='bookmarks'),
     path('me/edit', edit, name='edit'),
-    path('fallowings', fallowings_posts, name='fallowings_posts'),
     path('upload', upload_image, name='upload_image'),
     path('delete/<int:id>', delete_post, name='delete_post'),
 

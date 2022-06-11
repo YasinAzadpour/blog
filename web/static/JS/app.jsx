@@ -776,31 +776,6 @@ const Home = ({}) => {
       });
     }
   };
-  const getFallowings = () => {
-    if (fallowings.hasNext) {
-      $.ajax({
-        method: "POST",
-        url: "/api/fallowings",
-        data: {
-          csrfmiddlewaretoken: data.csrfmiddlewaretoken,
-          page: fallowings.items.length / 15 + 1,
-        },
-        success: (r) => {
-          if (r.result) {
-            r["items"] = fallowings.items.concat(r.items);
-            r["isReady"] = true;
-            setFallowings(r);
-          } else {
-            showMsg("An unexpected error occurred");
-          }
-        },
-        error: () => {
-          showMsg("An unknown network error has occurred");
-          setTimeout(getFallowings, 10000);
-        },
-      });
-    }
-  };
   const getFallowingUsers = () => {
     if (fallowingUsers.hasNext) {
       $.ajax({
@@ -874,8 +849,6 @@ const Home = ({}) => {
             getRec();
           } else if (state == "latests") {
             getLatests();
-          } else if (state == "fallowings") {
-            getFallowings();
           }
         }
       });
@@ -883,7 +856,7 @@ const Home = ({}) => {
     if (lastChild) {
       observer.observe(lastChild);
     }
-  }, [rec, fallowings, latests]);
+  }, [rec, latests]);
 
   useEffect(() => {
     const lastChild = document.querySelector("#tagsContainer .loading");
@@ -972,26 +945,8 @@ const Home = ({}) => {
                   state == "rec" ? "border-gray-900" : "opacity-[0.75]"
                 }`}
               >
-                Suggestions
+                Recommended
               </button>
-              {data.me.id ? (
-                <button
-                  onClick={() => {
-                    if (fallowings.items.length == 0) {
-                      getFallowings();
-                    }
-
-                    setState("fallowings");
-                  }}
-                  className={`transition-all py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto focus-visible:scale-110  focus-visible:opacity-100 ${
-                    state == "fallowings" ? "border-gray-900" : "opacity-[0.75]"
-                  }`}
-                >
-                  Fallowings
-                </button>
-              ) : (
-                ""
-              )}
               <button
                 onClick={() => {
                   if (latests.items.length == 0) {
@@ -1014,28 +969,19 @@ const Home = ({}) => {
               <button className="py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto">
                 <div className="fadeInLoad relative rounded-full h-5 w-20 bg-gray-200" />
               </button>
-              <button className="py-2 px-3 translate-y-[2px] border-b-2 w-full sm:w-auto">
-                <div className="fadeInLoad relative rounded-full h-5 w-20 bg-gray-200" />
-              </button>
             </div>
           )}
           <div className="postsContainer">
             {state == "rec" &&
               rec.items.map((i) => <Post post={i} key={i.id} />)}
-            {state == "fallowings" &&
-              fallowings.items.map((i) => <Post post={i} key={i.id} />)}
             {state == "latests" &&
               latests.items.map((i) => <Post post={i} key={i.id} />)}
 
             {((state == "rec" && rec.hasNext && rec.isReady) ||
-              (state == "fallowings" &&
-                fallowings.hasNext &&
-                fallowings.isReady) ||
               (state == "latests" && latests.hasNext && latests.isReady)) && (
               <Loading />
             )}
             {((state == "rec" && !rec.isReady) ||
-              (state == "fallowings" && !fallowings.isReady) ||
               (state == "latests" && !latests.isReady)) &&
               [1, 2, 3, 4, 5].map((i) => <Post loading={true} key={i} />)}
           </div>

@@ -162,19 +162,6 @@ def rec_posts(request):
     return JsonResponse({'result': 1, 'items': []})
 
 @require_POST
-def fallowings_posts(request):
-    user = request.user
-    if user.is_authenticated:
-        p = Paginator(Post.fallowings(user), 15)
-        num_page = request.POST.get('page',1)
-        this_page = p.get_page(num_page)
-        data = [i.as_json(user) for i in this_page.object_list]
-
-        return JsonResponse({'result': 1, 'items': data, 'hasNext': this_page.has_next()})
-
-    return JsonResponse({'result': 0})
-
-@require_POST
 def latest_posts(request):
     user = request.user if request.user.is_authenticated else None
     p = Paginator(Post.latests, 15)
